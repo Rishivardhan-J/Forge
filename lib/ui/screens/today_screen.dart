@@ -100,6 +100,7 @@ class TodayScreen extends ConsumerWidget {
           showModalBottomSheet(
             context: context,
             isScrollControlled: true,
+            useSafeArea: true,
             backgroundColor: AppTheme.bgSurfaceRaised,
             builder: (context) => const AddEditHabitSheet(),
           );
@@ -128,6 +129,7 @@ class TodayScreen extends ConsumerWidget {
               showModalBottomSheet(
                 context: context,
                 isScrollControlled: true,
+                useSafeArea: true,
                 backgroundColor: AppTheme.bgSurfaceRaised,
                 builder: (context) => const AddEditHabitSheet(),
               );

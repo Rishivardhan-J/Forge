@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../theme/app_theme.dart';
 import '../../providers/user_settings_provider.dart';
+import '../../models/user_settings.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -23,8 +24,12 @@ class SettingsScreen extends ConsumerWidget {
             value: settings.listViewDefault,
             activeColor: AppTheme.accentGrowthFill,
             onChanged: (val) {
-              final updated = settings..listViewDefault = val;
-              ref.read(userSettingsNotifierProvider).updateSettings(updated);
+              final updated = UserSettings()
+                ..id = settings.id
+                ..dayStartTime = settings.dayStartTime
+                ..reduceMotion = settings.reduceMotion
+                ..listViewDefault = val;
+              ref.read(userSettingsProvider.notifier).updateSettings(updated);
             },
           ),
         ],
