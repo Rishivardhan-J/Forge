@@ -22,23 +22,28 @@ const HabitLogSchema = CollectionSchema(
       name: r'date',
       type: IsarType.dateTime,
     ),
-    r'habitId': PropertySchema(
+    r'environmentReady': PropertySchema(
       id: 1,
+      name: r'environmentReady',
+      type: IsarType.bool,
+    ),
+    r'habitId': PropertySchema(
+      id: 2,
       name: r'habitId',
       type: IsarType.string,
     ),
     r'isBackfilled': PropertySchema(
-      id: 2,
+      id: 3,
       name: r'isBackfilled',
       type: IsarType.bool,
     ),
     r'loggedAt': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'loggedAt',
       type: IsarType.dateTime,
     ),
     r'status': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'status',
       type: IsarType.byte,
       enumMap: _HabitLogstatusEnumValueMap,
@@ -102,10 +107,11 @@ void _habitLogSerialize(
   Map<Type, List<int>> allOffsets,
 ) {
   writer.writeDateTime(offsets[0], object.date);
-  writer.writeString(offsets[1], object.habitId);
-  writer.writeBool(offsets[2], object.isBackfilled);
-  writer.writeDateTime(offsets[3], object.loggedAt);
-  writer.writeByte(offsets[4], object.status.index);
+  writer.writeBool(offsets[1], object.environmentReady);
+  writer.writeString(offsets[2], object.habitId);
+  writer.writeBool(offsets[3], object.isBackfilled);
+  writer.writeDateTime(offsets[4], object.loggedAt);
+  writer.writeByte(offsets[5], object.status.index);
 }
 
 HabitLog _habitLogDeserialize(
@@ -116,12 +122,13 @@ HabitLog _habitLogDeserialize(
 ) {
   final object = HabitLog();
   object.date = reader.readDateTime(offsets[0]);
-  object.habitId = reader.readString(offsets[1]);
+  object.environmentReady = reader.readBoolOrNull(offsets[1]);
+  object.habitId = reader.readString(offsets[2]);
   object.id = id;
-  object.isBackfilled = reader.readBool(offsets[2]);
-  object.loggedAt = reader.readDateTime(offsets[3]);
+  object.isBackfilled = reader.readBool(offsets[3]);
+  object.loggedAt = reader.readDateTime(offsets[4]);
   object.status =
-      _HabitLogstatusValueEnumMap[reader.readByteOrNull(offsets[4])] ??
+      _HabitLogstatusValueEnumMap[reader.readByteOrNull(offsets[5])] ??
           LogStatus.done;
   return object;
 }
@@ -136,12 +143,14 @@ P _habitLogDeserializeProp<P>(
     case 0:
       return (reader.readDateTime(offset)) as P;
     case 1:
-      return (reader.readString(offset)) as P;
+      return (reader.readBoolOrNull(offset)) as P;
     case 2:
-      return (reader.readBool(offset)) as P;
+      return (reader.readString(offset)) as P;
     case 3:
-      return (reader.readDateTime(offset)) as P;
+      return (reader.readBool(offset)) as P;
     case 4:
+      return (reader.readDateTime(offset)) as P;
+    case 5:
       return (_HabitLogstatusValueEnumMap[reader.readByteOrNull(offset)] ??
           LogStatus.done) as P;
     default:
@@ -445,6 +454,34 @@ extension HabitLogQueryFilter
         includeLower: includeLower,
         upper: upper,
         includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<HabitLog, HabitLog, QAfterFilterCondition>
+      environmentReadyIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'environmentReady',
+      ));
+    });
+  }
+
+  QueryBuilder<HabitLog, HabitLog, QAfterFilterCondition>
+      environmentReadyIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'environmentReady',
+      ));
+    });
+  }
+
+  QueryBuilder<HabitLog, HabitLog, QAfterFilterCondition>
+      environmentReadyEqualTo(bool? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'environmentReady',
+        value: value,
       ));
     });
   }
@@ -767,6 +804,18 @@ extension HabitLogQuerySortBy on QueryBuilder<HabitLog, HabitLog, QSortBy> {
     });
   }
 
+  QueryBuilder<HabitLog, HabitLog, QAfterSortBy> sortByEnvironmentReady() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'environmentReady', Sort.asc);
+    });
+  }
+
+  QueryBuilder<HabitLog, HabitLog, QAfterSortBy> sortByEnvironmentReadyDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'environmentReady', Sort.desc);
+    });
+  }
+
   QueryBuilder<HabitLog, HabitLog, QAfterSortBy> sortByHabitId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'habitId', Sort.asc);
@@ -827,6 +876,18 @@ extension HabitLogQuerySortThenBy
   QueryBuilder<HabitLog, HabitLog, QAfterSortBy> thenByDateDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'date', Sort.desc);
+    });
+  }
+
+  QueryBuilder<HabitLog, HabitLog, QAfterSortBy> thenByEnvironmentReady() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'environmentReady', Sort.asc);
+    });
+  }
+
+  QueryBuilder<HabitLog, HabitLog, QAfterSortBy> thenByEnvironmentReadyDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'environmentReady', Sort.desc);
     });
   }
 
@@ -899,6 +960,12 @@ extension HabitLogQueryWhereDistinct
     });
   }
 
+  QueryBuilder<HabitLog, HabitLog, QDistinct> distinctByEnvironmentReady() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'environmentReady');
+    });
+  }
+
   QueryBuilder<HabitLog, HabitLog, QDistinct> distinctByHabitId(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -936,6 +1003,12 @@ extension HabitLogQueryProperty
   QueryBuilder<HabitLog, DateTime, QQueryOperations> dateProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'date');
+    });
+  }
+
+  QueryBuilder<HabitLog, bool?, QQueryOperations> environmentReadyProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'environmentReady');
     });
   }
 

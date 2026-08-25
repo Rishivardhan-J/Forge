@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../models/habit.dart';
@@ -117,6 +118,7 @@ class _TransitMapLineState extends ConsumerState<TransitMapLine> with SingleTick
               child: Text(
                 widget.stack!.name,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppTheme.textSecondary, fontSize: 12 * widget.scale),
+                textScaler: MediaQuery.textScalerOf(context).clamp(minScaleFactor: 1.0, maxScaleFactor: 1.3),
               ),
             ),
             
@@ -131,19 +133,21 @@ class _TransitMapLineState extends ConsumerState<TransitMapLine> with SingleTick
                   top: stationSize / 2,
                   left: stationSize / 2,
                   right: 0,
-                  child: AnimatedBuilder(
-                    animation: _trainAnimation,
-                    builder: (context, child) {
-                      return CustomPaint(
-                        size: Size((widget.habits.length - 1) * spacing, 0),
-                        painter: _TrackPainter(
-                          trainPosIndex: _trainAnimation.value,
-                          stationSpacing: spacing,
-                          stationSize: stationSize,
-                          accentColor: lineColor,
-                        ),
-                      );
-                    },
+                  child: ExcludeSemantics(
+                    child: AnimatedBuilder(
+                      animation: _trainAnimation,
+                      builder: (context, child) {
+                        return CustomPaint(
+                          size: Size((widget.habits.length - 1) * spacing, 0),
+                          painter: _TrackPainter(
+                            trainPosIndex: _trainAnimation.value,
+                            stationSpacing: spacing,
+                            stationSize: stationSize,
+                            accentColor: lineColor,
+                          ),
+                        );
+                      },
+                    ),
                   ),
                 ),
                 
@@ -152,37 +156,59 @@ class _TransitMapLineState extends ConsumerState<TransitMapLine> with SingleTick
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: List.generate(widget.habits.length, (i) {
                     final h = widget.habits[i];
+                    final status = statuses[i];
+                    
+                    String statusLabel = 'unlogged';
+                    if (status == LogStatus.done || status == LogStatus.doneViaTwoMinute) statusLabel = 'completed';
+                    if (status == LogStatus.missed) statusLabel = 'missed';
+                    if (status == LogStatus.excused) statusLabel = 'excused';
+                    if (status == LogStatus.notScheduled) statusLabel = 'not scheduled today';
+
+                    final semanticsLabel = '${h.name}, $statusLabel' + 
+                        (widget.stack != null ? ', part of ${widget.stack!.name} stack' : '');
+
                     return Container(
                       width: spacing,
                       alignment: Alignment.topCenter,
-                      child: GestureDetector(
-                        onTap: widget.interactive ? () {
-                          if (!isScheduledList[i] && statuses[i] == LogStatus.notScheduled) {
+                      child: Semantics(
+                        label: semanticsLabel,
+                        button: widget.interactive,
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: widget.interactive ? () {
+                            if (!isScheduledList[i] && statuses[i] == LogStatus.notScheduled) {
+                              Navigator.push(context, MaterialPageRoute(builder: (_) => HabitDetailScreen(habit: h)));
+                              return;
+                            }
+                            _showLogChoice(context, ref, h, today);
+                          } : null,
+                          onLongPress: widget.interactive ? () {
                             Navigator.push(context, MaterialPageRoute(builder: (_) => HabitDetailScreen(habit: h)));
-                            return;
-                          }
-                          _showLogChoice(context, ref, h, today);
-                        } : null,
-                        onLongPress: widget.interactive ? () {
-                          Navigator.push(context, MaterialPageRoute(builder: (_) => HabitDetailScreen(habit: h)));
-                        } : null,
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            _StationNode(
-                              status: statuses[i],
-                              accentColor: lineColor,
-                              size: stationSize,
+                          } : null,
+                          child: Container(
+                            constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+                            alignment: Alignment.topCenter,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                _StationNode(
+                                  status: statuses[i],
+                                  accentColor: lineColor,
+                                  size: stationSize,
+                                ),
+                                SizedBox(height: AppTheme.spacingSm * widget.scale),
+                                ExcludeSemantics(
+                                  child: Text(
+                                    h.name,
+                                    textAlign: TextAlign.center,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 10 * widget.scale),
+                                  ),
+                                ),
+                              ],
                             ),
-                            SizedBox(height: AppTheme.spacingSm * widget.scale),
-                            Text(
-                              h.name,
-                              textAlign: TextAlign.center,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 10 * widget.scale),
-                            ),
-                          ],
+                          ),
                         ),
                       ),
                     );
@@ -208,6 +234,7 @@ class _TransitMapLineState extends ConsumerState<TransitMapLine> with SingleTick
             ListTile(
               title: const Text('Done'),
               onTap: () {
+                HapticFeedback.mediumImpact();
                 ref.read(habitNotifierProvider).logHabit(habit.id.toString(), todayDate, LogStatus.done);
                 Navigator.pop(ctx);
               },
@@ -215,16 +242,19 @@ class _TransitMapLineState extends ConsumerState<TransitMapLine> with SingleTick
             ListTile(
               title: const Text('Done (2-min version)'),
               onTap: () {
+                HapticFeedback.mediumImpact();
                 ref.read(habitNotifierProvider).logHabit(habit.id.toString(), todayDate, LogStatus.doneViaTwoMinute);
                 Navigator.pop(ctx);
               },
             ),
             ListTile(
-              title: const Text('Missed'),
-              onTap: () {
-                ref.read(habitNotifierProvider).logHabit(habit.id.toString(), todayDate, LogStatus.missed);
-                Navigator.pop(ctx);
-              },
+                title: const Text('Missed'),
+                onTap: () {
+                  HapticFeedback.heavyImpact();
+                  ref.read(habitNotifierProvider).logHabit(habit.id.toString(), todayDate, LogStatus.missed);
+                  HabitUtils.showEnvironmentReadyPrompt(context, ref, habit, todayDate);
+                  Navigator.pop(ctx);
+                },
             ),
             ListTile(
               title: const Text('Excused'),

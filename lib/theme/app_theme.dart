@@ -22,6 +22,10 @@ class AppTheme {
   static const Color accentGrowthText = Color(0xFF5DCAA5);
   static const Color accentRecoverFill = Color(0xFFBA7517);
   static const Color accentRecoverText = Color(0xFFEF9F27);
+  
+  // Note: accent.danger is defined here for future extensibility (e.g. high-priority habit misses),
+  // but it is intentionally NEVER used anywhere in v1 to keep the emotional palette calm by design.
+  // Do not build a high-priority flag just to use this color.
   static const Color accentDanger = Color(0xFFA32D2D);
   static const Color accentIdentityFill = Color(0xFF534AB7);
   static const Color accentIdentityText = Color(0xFF7F77DD);

@@ -27,9 +27,19 @@ const UserSettingsSchema = CollectionSchema(
       name: r'listViewDefault',
       type: IsarType.bool,
     ),
-    r'reduceMotion': PropertySchema(
+    r'onboardingCompleted': PropertySchema(
       id: 2,
+      name: r'onboardingCompleted',
+      type: IsarType.bool,
+    ),
+    r'reduceMotion': PropertySchema(
+      id: 3,
       name: r'reduceMotion',
+      type: IsarType.bool,
+    ),
+    r'weeklyReviewEnabled': PropertySchema(
+      id: 4,
+      name: r'weeklyReviewEnabled',
       type: IsarType.bool,
     )
   },
@@ -65,7 +75,9 @@ void _userSettingsSerialize(
 ) {
   writer.writeString(offsets[0], object.dayStartTime);
   writer.writeBool(offsets[1], object.listViewDefault);
-  writer.writeBool(offsets[2], object.reduceMotion);
+  writer.writeBool(offsets[2], object.onboardingCompleted);
+  writer.writeBool(offsets[3], object.reduceMotion);
+  writer.writeBool(offsets[4], object.weeklyReviewEnabled);
 }
 
 UserSettings _userSettingsDeserialize(
@@ -78,7 +90,9 @@ UserSettings _userSettingsDeserialize(
   object.dayStartTime = reader.readString(offsets[0]);
   object.id = id;
   object.listViewDefault = reader.readBool(offsets[1]);
-  object.reduceMotion = reader.readBool(offsets[2]);
+  object.onboardingCompleted = reader.readBool(offsets[2]);
+  object.reduceMotion = reader.readBool(offsets[3]);
+  object.weeklyReviewEnabled = reader.readBool(offsets[4]);
   return object;
 }
 
@@ -94,6 +108,10 @@ P _userSettingsDeserializeProp<P>(
     case 1:
       return (reader.readBool(offset)) as P;
     case 2:
+      return (reader.readBool(offset)) as P;
+    case 3:
+      return (reader.readBool(offset)) as P;
+    case 4:
       return (reader.readBool(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -394,10 +412,30 @@ extension UserSettingsQueryFilter
   }
 
   QueryBuilder<UserSettings, UserSettings, QAfterFilterCondition>
+      onboardingCompletedEqualTo(bool value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'onboardingCompleted',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<UserSettings, UserSettings, QAfterFilterCondition>
       reduceMotionEqualTo(bool value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'reduceMotion',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<UserSettings, UserSettings, QAfterFilterCondition>
+      weeklyReviewEnabledEqualTo(bool value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'weeklyReviewEnabled',
         value: value,
       ));
     });
@@ -439,6 +477,20 @@ extension UserSettingsQuerySortBy
     });
   }
 
+  QueryBuilder<UserSettings, UserSettings, QAfterSortBy>
+      sortByOnboardingCompleted() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'onboardingCompleted', Sort.asc);
+    });
+  }
+
+  QueryBuilder<UserSettings, UserSettings, QAfterSortBy>
+      sortByOnboardingCompletedDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'onboardingCompleted', Sort.desc);
+    });
+  }
+
   QueryBuilder<UserSettings, UserSettings, QAfterSortBy> sortByReduceMotion() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'reduceMotion', Sort.asc);
@@ -449,6 +501,20 @@ extension UserSettingsQuerySortBy
       sortByReduceMotionDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'reduceMotion', Sort.desc);
+    });
+  }
+
+  QueryBuilder<UserSettings, UserSettings, QAfterSortBy>
+      sortByWeeklyReviewEnabled() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'weeklyReviewEnabled', Sort.asc);
+    });
+  }
+
+  QueryBuilder<UserSettings, UserSettings, QAfterSortBy>
+      sortByWeeklyReviewEnabledDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'weeklyReviewEnabled', Sort.desc);
     });
   }
 }
@@ -494,6 +560,20 @@ extension UserSettingsQuerySortThenBy
     });
   }
 
+  QueryBuilder<UserSettings, UserSettings, QAfterSortBy>
+      thenByOnboardingCompleted() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'onboardingCompleted', Sort.asc);
+    });
+  }
+
+  QueryBuilder<UserSettings, UserSettings, QAfterSortBy>
+      thenByOnboardingCompletedDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'onboardingCompleted', Sort.desc);
+    });
+  }
+
   QueryBuilder<UserSettings, UserSettings, QAfterSortBy> thenByReduceMotion() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'reduceMotion', Sort.asc);
@@ -504,6 +584,20 @@ extension UserSettingsQuerySortThenBy
       thenByReduceMotionDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'reduceMotion', Sort.desc);
+    });
+  }
+
+  QueryBuilder<UserSettings, UserSettings, QAfterSortBy>
+      thenByWeeklyReviewEnabled() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'weeklyReviewEnabled', Sort.asc);
+    });
+  }
+
+  QueryBuilder<UserSettings, UserSettings, QAfterSortBy>
+      thenByWeeklyReviewEnabledDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'weeklyReviewEnabled', Sort.desc);
     });
   }
 }
@@ -524,9 +618,23 @@ extension UserSettingsQueryWhereDistinct
     });
   }
 
+  QueryBuilder<UserSettings, UserSettings, QDistinct>
+      distinctByOnboardingCompleted() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'onboardingCompleted');
+    });
+  }
+
   QueryBuilder<UserSettings, UserSettings, QDistinct> distinctByReduceMotion() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'reduceMotion');
+    });
+  }
+
+  QueryBuilder<UserSettings, UserSettings, QDistinct>
+      distinctByWeeklyReviewEnabled() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'weeklyReviewEnabled');
     });
   }
 }
@@ -551,9 +659,23 @@ extension UserSettingsQueryProperty
     });
   }
 
+  QueryBuilder<UserSettings, bool, QQueryOperations>
+      onboardingCompletedProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'onboardingCompleted');
+    });
+  }
+
   QueryBuilder<UserSettings, bool, QQueryOperations> reduceMotionProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'reduceMotion');
+    });
+  }
+
+  QueryBuilder<UserSettings, bool, QQueryOperations>
+      weeklyReviewEnabledProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'weeklyReviewEnabled');
     });
   }
 }

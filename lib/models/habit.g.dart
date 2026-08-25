@@ -22,65 +22,85 @@ const HabitSchema = CollectionSchema(
       name: r'createdAt',
       type: IsarType.dateTime,
     ),
-    r'cueType': PropertySchema(
+    r'cueLocationLat': PropertySchema(
       id: 1,
+      name: r'cueLocationLat',
+      type: IsarType.double,
+    ),
+    r'cueLocationLng': PropertySchema(
+      id: 2,
+      name: r'cueLocationLng',
+      type: IsarType.double,
+    ),
+    r'cueLocationRadius': PropertySchema(
+      id: 3,
+      name: r'cueLocationRadius',
+      type: IsarType.double,
+    ),
+    r'cueType': PropertySchema(
+      id: 4,
       name: r'cueType',
       type: IsarType.byte,
       enumMap: _HabitcueTypeEnumValueMap,
     ),
     r'cueValue': PropertySchema(
-      id: 2,
+      id: 5,
       name: r'cueValue',
       type: IsarType.string,
     ),
     r'environmentTagId': PropertySchema(
-      id: 3,
+      id: 6,
       name: r'environmentTagId',
       type: IsarType.string,
     ),
     r'frequency': PropertySchema(
-      id: 4,
+      id: 7,
       name: r'frequency',
       type: IsarType.object,
       target: r'Frequency',
     ),
     r'identityStatementId': PropertySchema(
-      id: 5,
+      id: 8,
       name: r'identityStatementId',
       type: IsarType.string,
     ),
     r'isArchived': PropertySchema(
-      id: 6,
+      id: 9,
       name: r'isArchived',
       type: IsarType.bool,
     ),
     r'name': PropertySchema(
-      id: 7,
+      id: 10,
       name: r'name',
       type: IsarType.string,
     ),
+    r'notificationsEnabled': PropertySchema(
+      id: 11,
+      name: r'notificationsEnabled',
+      type: IsarType.bool,
+    ),
     r'pausedUntil': PropertySchema(
-      id: 8,
+      id: 12,
       name: r'pausedUntil',
       type: IsarType.dateTime,
     ),
     r'stackId': PropertySchema(
-      id: 9,
+      id: 13,
       name: r'stackId',
       type: IsarType.string,
     ),
     r'stackOrder': PropertySchema(
-      id: 10,
+      id: 14,
       name: r'stackOrder',
       type: IsarType.long,
     ),
     r'temptationBundle': PropertySchema(
-      id: 11,
+      id: 15,
       name: r'temptationBundle',
       type: IsarType.string,
     ),
     r'twoMinuteVersion': PropertySchema(
-      id: 12,
+      id: 16,
       name: r'twoMinuteVersion',
       type: IsarType.string,
     )
@@ -185,23 +205,27 @@ void _habitSerialize(
   Map<Type, List<int>> allOffsets,
 ) {
   writer.writeDateTime(offsets[0], object.createdAt);
-  writer.writeByte(offsets[1], object.cueType.index);
-  writer.writeString(offsets[2], object.cueValue);
-  writer.writeString(offsets[3], object.environmentTagId);
+  writer.writeDouble(offsets[1], object.cueLocationLat);
+  writer.writeDouble(offsets[2], object.cueLocationLng);
+  writer.writeDouble(offsets[3], object.cueLocationRadius);
+  writer.writeByte(offsets[4], object.cueType.index);
+  writer.writeString(offsets[5], object.cueValue);
+  writer.writeString(offsets[6], object.environmentTagId);
   writer.writeObject<Frequency>(
-    offsets[4],
+    offsets[7],
     allOffsets,
     FrequencySchema.serialize,
     object.frequency,
   );
-  writer.writeString(offsets[5], object.identityStatementId);
-  writer.writeBool(offsets[6], object.isArchived);
-  writer.writeString(offsets[7], object.name);
-  writer.writeDateTime(offsets[8], object.pausedUntil);
-  writer.writeString(offsets[9], object.stackId);
-  writer.writeLong(offsets[10], object.stackOrder);
-  writer.writeString(offsets[11], object.temptationBundle);
-  writer.writeString(offsets[12], object.twoMinuteVersion);
+  writer.writeString(offsets[8], object.identityStatementId);
+  writer.writeBool(offsets[9], object.isArchived);
+  writer.writeString(offsets[10], object.name);
+  writer.writeBool(offsets[11], object.notificationsEnabled);
+  writer.writeDateTime(offsets[12], object.pausedUntil);
+  writer.writeString(offsets[13], object.stackId);
+  writer.writeLong(offsets[14], object.stackOrder);
+  writer.writeString(offsets[15], object.temptationBundle);
+  writer.writeString(offsets[16], object.twoMinuteVersion);
 }
 
 Habit _habitDeserialize(
@@ -212,26 +236,30 @@ Habit _habitDeserialize(
 ) {
   final object = Habit();
   object.createdAt = reader.readDateTime(offsets[0]);
+  object.cueLocationLat = reader.readDoubleOrNull(offsets[1]);
+  object.cueLocationLng = reader.readDoubleOrNull(offsets[2]);
+  object.cueLocationRadius = reader.readDoubleOrNull(offsets[3]);
   object.cueType =
-      _HabitcueTypeValueEnumMap[reader.readByteOrNull(offsets[1])] ??
+      _HabitcueTypeValueEnumMap[reader.readByteOrNull(offsets[4])] ??
           CueType.time;
-  object.cueValue = reader.readString(offsets[2]);
-  object.environmentTagId = reader.readStringOrNull(offsets[3]);
+  object.cueValue = reader.readString(offsets[5]);
+  object.environmentTagId = reader.readStringOrNull(offsets[6]);
   object.frequency = reader.readObjectOrNull<Frequency>(
-        offsets[4],
+        offsets[7],
         FrequencySchema.deserialize,
         allOffsets,
       ) ??
       Frequency();
   object.id = id;
-  object.identityStatementId = reader.readStringOrNull(offsets[5]);
-  object.isArchived = reader.readBool(offsets[6]);
-  object.name = reader.readString(offsets[7]);
-  object.pausedUntil = reader.readDateTimeOrNull(offsets[8]);
-  object.stackId = reader.readStringOrNull(offsets[9]);
-  object.stackOrder = reader.readLong(offsets[10]);
-  object.temptationBundle = reader.readStringOrNull(offsets[11]);
-  object.twoMinuteVersion = reader.readString(offsets[12]);
+  object.identityStatementId = reader.readStringOrNull(offsets[8]);
+  object.isArchived = reader.readBool(offsets[9]);
+  object.name = reader.readString(offsets[10]);
+  object.notificationsEnabled = reader.readBool(offsets[11]);
+  object.pausedUntil = reader.readDateTimeOrNull(offsets[12]);
+  object.stackId = reader.readStringOrNull(offsets[13]);
+  object.stackOrder = reader.readLong(offsets[14]);
+  object.temptationBundle = reader.readStringOrNull(offsets[15]);
+  object.twoMinuteVersion = reader.readString(offsets[16]);
   return object;
 }
 
@@ -245,34 +273,42 @@ P _habitDeserializeProp<P>(
     case 0:
       return (reader.readDateTime(offset)) as P;
     case 1:
+      return (reader.readDoubleOrNull(offset)) as P;
+    case 2:
+      return (reader.readDoubleOrNull(offset)) as P;
+    case 3:
+      return (reader.readDoubleOrNull(offset)) as P;
+    case 4:
       return (_HabitcueTypeValueEnumMap[reader.readByteOrNull(offset)] ??
           CueType.time) as P;
-    case 2:
+    case 5:
       return (reader.readString(offset)) as P;
-    case 3:
+    case 6:
       return (reader.readStringOrNull(offset)) as P;
-    case 4:
+    case 7:
       return (reader.readObjectOrNull<Frequency>(
             offset,
             FrequencySchema.deserialize,
             allOffsets,
           ) ??
           Frequency()) as P;
-    case 5:
-      return (reader.readStringOrNull(offset)) as P;
-    case 6:
-      return (reader.readBool(offset)) as P;
-    case 7:
-      return (reader.readString(offset)) as P;
     case 8:
-      return (reader.readDateTimeOrNull(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 9:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readBool(offset)) as P;
     case 10:
-      return (reader.readLong(offset)) as P;
+      return (reader.readString(offset)) as P;
     case 11:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readBool(offset)) as P;
     case 12:
+      return (reader.readDateTimeOrNull(offset)) as P;
+    case 13:
+      return (reader.readStringOrNull(offset)) as P;
+    case 14:
+      return (reader.readLong(offset)) as P;
+    case 15:
+      return (reader.readStringOrNull(offset)) as P;
+    case 16:
       return (reader.readString(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -622,6 +658,242 @@ extension HabitQueryFilter on QueryBuilder<Habit, Habit, QFilterCondition> {
         includeLower: includeLower,
         upper: upper,
         includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterFilterCondition> cueLocationLatIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'cueLocationLat',
+      ));
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterFilterCondition> cueLocationLatIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'cueLocationLat',
+      ));
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterFilterCondition> cueLocationLatEqualTo(
+    double? value, {
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'cueLocationLat',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterFilterCondition> cueLocationLatGreaterThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'cueLocationLat',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterFilterCondition> cueLocationLatLessThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'cueLocationLat',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterFilterCondition> cueLocationLatBetween(
+    double? lower,
+    double? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'cueLocationLat',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterFilterCondition> cueLocationLngIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'cueLocationLng',
+      ));
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterFilterCondition> cueLocationLngIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'cueLocationLng',
+      ));
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterFilterCondition> cueLocationLngEqualTo(
+    double? value, {
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'cueLocationLng',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterFilterCondition> cueLocationLngGreaterThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'cueLocationLng',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterFilterCondition> cueLocationLngLessThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'cueLocationLng',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterFilterCondition> cueLocationLngBetween(
+    double? lower,
+    double? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'cueLocationLng',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterFilterCondition> cueLocationRadiusIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'cueLocationRadius',
+      ));
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterFilterCondition>
+      cueLocationRadiusIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'cueLocationRadius',
+      ));
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterFilterCondition> cueLocationRadiusEqualTo(
+    double? value, {
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'cueLocationRadius',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterFilterCondition>
+      cueLocationRadiusGreaterThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'cueLocationRadius',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterFilterCondition> cueLocationRadiusLessThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'cueLocationRadius',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterFilterCondition> cueLocationRadiusBetween(
+    double? lower,
+    double? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'cueLocationRadius',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
       ));
     });
   }
@@ -1299,6 +1571,16 @@ extension HabitQueryFilter on QueryBuilder<Habit, Habit, QFilterCondition> {
     });
   }
 
+  QueryBuilder<Habit, Habit, QAfterFilterCondition> notificationsEnabledEqualTo(
+      bool value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'notificationsEnabled',
+        value: value,
+      ));
+    });
+  }
+
   QueryBuilder<Habit, Habit, QAfterFilterCondition> pausedUntilIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
@@ -1871,6 +2153,42 @@ extension HabitQuerySortBy on QueryBuilder<Habit, Habit, QSortBy> {
     });
   }
 
+  QueryBuilder<Habit, Habit, QAfterSortBy> sortByCueLocationLat() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'cueLocationLat', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterSortBy> sortByCueLocationLatDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'cueLocationLat', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterSortBy> sortByCueLocationLng() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'cueLocationLng', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterSortBy> sortByCueLocationLngDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'cueLocationLng', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterSortBy> sortByCueLocationRadius() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'cueLocationRadius', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterSortBy> sortByCueLocationRadiusDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'cueLocationRadius', Sort.desc);
+    });
+  }
+
   QueryBuilder<Habit, Habit, QAfterSortBy> sortByCueType() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'cueType', Sort.asc);
@@ -1940,6 +2258,18 @@ extension HabitQuerySortBy on QueryBuilder<Habit, Habit, QSortBy> {
   QueryBuilder<Habit, Habit, QAfterSortBy> sortByNameDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'name', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterSortBy> sortByNotificationsEnabled() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'notificationsEnabled', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterSortBy> sortByNotificationsEnabledDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'notificationsEnabled', Sort.desc);
     });
   }
 
@@ -2014,6 +2344,42 @@ extension HabitQuerySortThenBy on QueryBuilder<Habit, Habit, QSortThenBy> {
   QueryBuilder<Habit, Habit, QAfterSortBy> thenByCreatedAtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'createdAt', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterSortBy> thenByCueLocationLat() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'cueLocationLat', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterSortBy> thenByCueLocationLatDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'cueLocationLat', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterSortBy> thenByCueLocationLng() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'cueLocationLng', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterSortBy> thenByCueLocationLngDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'cueLocationLng', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterSortBy> thenByCueLocationRadius() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'cueLocationRadius', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterSortBy> thenByCueLocationRadiusDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'cueLocationRadius', Sort.desc);
     });
   }
 
@@ -2101,6 +2467,18 @@ extension HabitQuerySortThenBy on QueryBuilder<Habit, Habit, QSortThenBy> {
     });
   }
 
+  QueryBuilder<Habit, Habit, QAfterSortBy> thenByNotificationsEnabled() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'notificationsEnabled', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterSortBy> thenByNotificationsEnabledDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'notificationsEnabled', Sort.desc);
+    });
+  }
+
   QueryBuilder<Habit, Habit, QAfterSortBy> thenByPausedUntil() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'pausedUntil', Sort.asc);
@@ -2169,6 +2547,24 @@ extension HabitQueryWhereDistinct on QueryBuilder<Habit, Habit, QDistinct> {
     });
   }
 
+  QueryBuilder<Habit, Habit, QDistinct> distinctByCueLocationLat() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'cueLocationLat');
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QDistinct> distinctByCueLocationLng() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'cueLocationLng');
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QDistinct> distinctByCueLocationRadius() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'cueLocationRadius');
+    });
+  }
+
   QueryBuilder<Habit, Habit, QDistinct> distinctByCueType() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'cueType');
@@ -2208,6 +2604,12 @@ extension HabitQueryWhereDistinct on QueryBuilder<Habit, Habit, QDistinct> {
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'name', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QDistinct> distinctByNotificationsEnabled() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'notificationsEnabled');
     });
   }
 
@@ -2260,6 +2662,24 @@ extension HabitQueryProperty on QueryBuilder<Habit, Habit, QQueryProperty> {
     });
   }
 
+  QueryBuilder<Habit, double?, QQueryOperations> cueLocationLatProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'cueLocationLat');
+    });
+  }
+
+  QueryBuilder<Habit, double?, QQueryOperations> cueLocationLngProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'cueLocationLng');
+    });
+  }
+
+  QueryBuilder<Habit, double?, QQueryOperations> cueLocationRadiusProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'cueLocationRadius');
+    });
+  }
+
   QueryBuilder<Habit, CueType, QQueryOperations> cueTypeProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'cueType');
@@ -2299,6 +2719,12 @@ extension HabitQueryProperty on QueryBuilder<Habit, Habit, QQueryProperty> {
   QueryBuilder<Habit, String, QQueryOperations> nameProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'name');
+    });
+  }
+
+  QueryBuilder<Habit, bool, QQueryOperations> notificationsEnabledProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'notificationsEnabled');
     });
   }
 

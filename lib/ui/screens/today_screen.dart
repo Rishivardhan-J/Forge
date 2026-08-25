@@ -36,7 +36,10 @@ class TodayScreen extends ConsumerWidget {
             return _buildEmptyState(context);
           }
 
-          if (userSettings.listViewDefault) {
+          final screenReaderActive = MediaQuery.accessibleNavigationOf(context);
+          final showListView = screenReaderActive || userSettings.listViewDefault;
+
+          if (showListView) {
             return ListView.separated(
               padding: const EdgeInsets.all(AppTheme.spacingXl),
               itemCount: habits.length,
@@ -114,8 +117,16 @@ class TodayScreen extends ConsumerWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          SizedBox(
+            width: 200,
+            height: 100,
+            child: CustomPaint(
+              painter: _EmptyStatePainter(),
+            ),
+          ),
+          const SizedBox(height: AppTheme.spacing2xl),
           Text(
-            'No habits yet.',
+            'Lay your first track',
             style: Theme.of(context).textTheme.titleLarge?.copyWith(color: AppTheme.textSecondary),
           ),
           const SizedBox(height: AppTheme.spacingXl),
@@ -140,6 +151,44 @@ class TodayScreen extends ConsumerWidget {
       ),
     );
   }
+}
+
+class _EmptyStatePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final trackPaint = Paint()
+      ..color = AppTheme.borderStrong
+      ..strokeWidth = 4
+      ..style = PaintingStyle.stroke;
+
+    final progressPaint = Paint()
+      ..color = AppTheme.accentGrowthFill.withOpacity(0.5)
+      ..strokeWidth = 4
+      ..style = PaintingStyle.stroke;
+
+    final stationPaint = Paint()
+      ..color = Colors.transparent
+      ..style = PaintingStyle.fill;
+    
+    final stationBorderPaint = Paint()
+      ..color = AppTheme.borderStrong
+      ..strokeWidth = 2
+      ..style = PaintingStyle.stroke;
+
+    // Draw track
+    canvas.drawLine(Offset(0, size.height / 2), Offset(size.width, size.height / 2), trackPaint);
+    canvas.drawLine(Offset(0, size.height / 2), Offset(size.width * 0.4, size.height / 2), progressPaint);
+
+    // Draw stations
+    canvas.drawCircle(Offset(size.width * 0.2, size.height / 2), 12, stationPaint);
+    canvas.drawCircle(Offset(size.width * 0.2, size.height / 2), 12, stationBorderPaint);
+
+    canvas.drawCircle(Offset(size.width * 0.8, size.height / 2), 12, stationPaint);
+    canvas.drawCircle(Offset(size.width * 0.8, size.height / 2), 12, stationBorderPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class _HabitRow extends ConsumerWidget {
@@ -187,7 +236,7 @@ class _HabitRow extends ConsumerWidget {
         },
         onLongPress: () {
           // Secondary action: Excused
-          _logStatus(ref, LogStatus.excused);
+          _logStatus(context, ref, LogStatus.excused);
         },
         child: Card(
           child: Padding(
@@ -244,21 +293,21 @@ class _HabitRow extends ConsumerWidget {
             ListTile(
               title: const Text('Done'),
               onTap: () {
-                _logStatus(ref, LogStatus.done);
+                _logStatus(context, ref, LogStatus.done);
                 Navigator.pop(ctx);
               },
             ),
             ListTile(
               title: const Text('Done (2-min version)'),
               onTap: () {
-                _logStatus(ref, LogStatus.doneViaTwoMinute);
+                _logStatus(context, ref, LogStatus.doneViaTwoMinute);
                 Navigator.pop(ctx);
               },
             ),
             ListTile(
               title: const Text('Missed'),
               onTap: () {
-                _logStatus(ref, LogStatus.missed);
+                _logStatus(context, ref, LogStatus.missed);
                 Navigator.pop(ctx);
               },
             ),
@@ -268,8 +317,11 @@ class _HabitRow extends ConsumerWidget {
     );
   }
 
-  void _logStatus(WidgetRef ref, LogStatus status) {
+  void _logStatus(BuildContext context, WidgetRef ref, LogStatus status) {
     ref.read(habitNotifierProvider).logHabit(habit.id.toString(), todayDate, status);
+    if (status == LogStatus.missed) {
+      HabitUtils.showEnvironmentReadyPrompt(context, ref, habit, todayDate);
+    }
   }
 }
 

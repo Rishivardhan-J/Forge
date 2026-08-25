@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator/geolocator.dart';
 
 import '../../models/habit.dart';
 import '../../providers/environment_tag_provider.dart';
@@ -7,11 +8,21 @@ import '../../providers/habit_provider.dart';
 import '../../providers/identity_provider.dart';
 import '../../providers/stack_provider.dart';
 import '../../theme/app_theme.dart';
+import '../../services/permission_service.dart';
 
 class AddEditHabitSheet extends ConsumerStatefulWidget {
   final Habit? existingHabit;
+  final String? initialName;
+  final bool isOnboarding;
+  final VoidCallback? onSaved;
 
-  const AddEditHabitSheet({super.key, this.existingHabit});
+  const AddEditHabitSheet({
+    super.key, 
+    this.existingHabit, 
+    this.initialName,
+    this.isOnboarding = false,
+    this.onSaved,
+  });
 
   @override
   ConsumerState<AddEditHabitSheet> createState() => _AddEditHabitSheetState();
@@ -34,12 +45,16 @@ class _AddEditHabitSheetState extends ConsumerState<AddEditHabitSheet> {
   String? _selectedEnvTagId;
   String? _selectedStackId;
 
+  double? _locationLat;
+  double? _locationLng;
+  double? _locationRadius;
+
   @override
   void initState() {
     super.initState();
     final h = widget.existingHabit;
     
-    _nameController = TextEditingController(text: h?.name ?? '');
+    _nameController = TextEditingController(text: h?.name ?? widget.initialName ?? '');
     _identityController = TextEditingController(); // Used only if creating a new one
     _selectedIdentityId = h?.identityStatementId;
 
@@ -56,6 +71,10 @@ class _AddEditHabitSheetState extends ConsumerState<AddEditHabitSheet> {
     _freqType = h?.frequency.type ?? FrequencyType.daily;
     _selectedWeekdays = h?.frequency.weekdays?.toList() ?? [];
     _timesPerWeek = h?.frequency.timesPerWeek ?? 3;
+
+    _locationLat = h?.cueLocationLat;
+    _locationLng = h?.cueLocationLng;
+    _locationRadius = h?.cueLocationRadius;
 
     // Add listeners to trigger rebuild for Save button validation
     _nameController.addListener(() => setState(() {}));
@@ -106,6 +125,9 @@ class _AddEditHabitSheetState extends ConsumerState<AddEditHabitSheet> {
       ..twoMinuteVersion = _twoMinuteController.text.trim()
       ..temptationBundle = _temptationController.text.trim().isEmpty ? null : _temptationController.text.trim()
       ..environmentTagId = envTagId
+      ..cueLocationLat = _locationLat
+      ..cueLocationLng = _locationLng
+      ..cueLocationRadius = _locationRadius
       ..frequency = Frequency()
       ..frequency.type = _freqType
       ..frequency.weekdays = _freqType == FrequencyType.specificWeekdays ? _selectedWeekdays : null
@@ -130,7 +152,56 @@ class _AddEditHabitSheetState extends ConsumerState<AddEditHabitSheet> {
       }
     }
 
-    if (mounted) Navigator.pop(context);
+    if (mounted) {
+      if (!(await PermissionService.hasAskedNotification())) {
+        await PermissionService.checkAndRequestNotificationPermission(context);
+      }
+      if (mounted) {
+        if (widget.isOnboarding) {
+          widget.onSaved?.call();
+        } else {
+          Navigator.pop(context);
+        }
+      }
+    }
+  }
+
+  Future<void> _setLocation() async {
+    final granted = await PermissionService.requestForegroundLocationPermission(context);
+    if (granted) {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Location services are disabled.')));
+        }
+        return;
+      }
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          return;
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        return;
+      }
+
+      final pos = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+      
+      // Also request background permission right after so geofencing can actually work
+      if (mounted) {
+        await PermissionService.requestBackgroundLocationPermission(context);
+      }
+
+      setState(() {
+        _locationLat = pos.latitude;
+        _locationLng = pos.longitude;
+        _locationRadius = 100.0;
+      });
+    }
   }
 
   @override
@@ -310,7 +381,27 @@ class _AddEditHabitSheetState extends ConsumerState<AddEditHabitSheet> {
       case CueType.time:
         return _buildTextField('Time (HH:mm)', _cueValueController);
       case CueType.location:
-        return _buildTextField('Location description', _cueValueController);
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildTextField('Location description', _cueValueController),
+            const SizedBox(height: AppTheme.spacingMd),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    _locationLat != null ? 'Location set (100m radius)' : 'Exact location for reminders (optional)',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.textSecondary),
+                  ),
+                ),
+                TextButton(
+                  onPressed: _setLocation,
+                  child: Text(_locationLat != null ? 'Update' : 'Set', style: const TextStyle(color: AppTheme.accentGrowthFill)),
+                ),
+              ],
+            ),
+          ],
+        );
       case CueType.afterHabit:
         // Dropdown of non-archived habits
         final habitsAsync = ref.watch(habitListProvider);

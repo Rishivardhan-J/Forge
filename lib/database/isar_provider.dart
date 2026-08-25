@@ -9,6 +9,7 @@ import '../models/habit_log.dart';
 import '../models/habit_stack.dart';
 import '../models/identity.dart';
 import '../models/user_settings.dart';
+import '../models/scorecard_entry.dart';
 
 final isarProvider = Provider<Isar>((ref) {
   throw UnimplementedError('isarProvider must be overridden in main.dart');
@@ -26,6 +27,7 @@ class DatabaseHelper {
         EnvironmentTagSchema,
         ConsistencyScoreSchema,
         UserSettingsSchema,
+        ScorecardEntrySchema,
       ],
       directory: dir.path,
     );

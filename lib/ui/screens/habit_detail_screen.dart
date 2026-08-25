@@ -114,6 +114,26 @@ class HabitDetailScreen extends ConsumerWidget {
                     const SizedBox(height: AppTheme.spacingMd),
                     _InfoRow(label: 'Temptation', value: habit.temptationBundle!),
                   ],
+                  const Divider(height: 32, color: AppTheme.borderStrong),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Vacation Mode', style: Theme.of(context).textTheme.bodyMedium),
+                      TextButton(
+                        onPressed: () => _toggleVacationMode(context, ref, today),
+                        child: Text(
+                          (habit.pausedUntil != null && habit.pausedUntil!.isAfter(today)) 
+                              ? 'Active (Resume)' 
+                              : 'Pause',
+                          style: TextStyle(
+                            color: (habit.pausedUntil != null && habit.pausedUntil!.isAfter(today)) 
+                                ? AppTheme.accentRecoverFill 
+                                : AppTheme.accentGrowthFill,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
@@ -202,6 +222,27 @@ class HabitDetailScreen extends ConsumerWidget {
     return const SizedBox.shrink();
   }
 
+  Future<void> _toggleVacationMode(BuildContext context, WidgetRef ref, DateTime today) async {
+    if (habit.pausedUntil != null && habit.pausedUntil!.isAfter(today)) {
+      // Resume
+      final updated = habit..pausedUntil = null;
+      await ref.read(habitNotifierProvider).saveHabit(updated);
+    } else {
+      // Pause
+      final date = await showDatePicker(
+        context: context,
+        initialDate: today.add(const Duration(days: 7)),
+        firstDate: today,
+        lastDate: today.add(const Duration(days: 365)),
+        helpText: 'Pause Until',
+      );
+      if (date != null) {
+        final updated = habit..pausedUntil = date;
+        await ref.read(habitNotifierProvider).saveHabit(updated);
+      }
+    }
+  }
+
   Widget _buildDayLogIndicator(BuildContext context, WidgetRef ref, DateTime date, List<HabitLog>? logs) {
     final isScheduled = HabitUtils.isScheduledOn(habit, date);
     
@@ -287,7 +328,8 @@ class HabitDetailScreen extends ConsumerWidget {
               title: const Text('Missed'),
               onTap: () {
                 ref.read(habitNotifierProvider).logHabit(habit.id.toString(), date, LogStatus.missed);
-                Navigator.pop(ctx);
+                HabitUtils.showEnvironmentReadyPrompt(context, ref, habit, date);
+                Navigator.pop(context);
               },
             ),
             ListTile(

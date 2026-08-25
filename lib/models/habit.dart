@@ -27,6 +27,11 @@ class Habit {
   late CueType cueType;
   late String cueValue;
   
+  bool notificationsEnabled = true;
+  double? cueLocationLat;
+  double? cueLocationLng;
+  double? cueLocationRadius;
+  
   late String twoMinuteVersion;
   String? temptationBundle;
   
@@ -39,7 +44,8 @@ class Habit {
 
   late Frequency frequency;
   
-  DateTime? pausedUntil;
-  late DateTime createdAt;
+  DateTime createdAt = DateTime.now();
   bool isArchived = false;
+
+  DateTime? pausedUntil;
 }

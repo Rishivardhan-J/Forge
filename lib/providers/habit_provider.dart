@@ -9,6 +9,7 @@ import '../models/identity.dart';
 import '../models/user_settings.dart';
 import '../utils/date_time_utils.dart';
 import '../utils/habit_utils.dart';
+import '../services/notification_service.dart';
 import 'user_settings_provider.dart';
 
 final habitListProvider = StreamProvider<List<Habit>>((ref) {
@@ -56,6 +57,12 @@ class HabitNotifier {
         await isar.consistencyScores.put(score);
       }
     });
+    
+    // Notifications scheduling
+    if (!habit.isArchived) {
+      await NotificationService().scheduleHabitReminders(habit);
+    }
+    
     return habit;
   }
 
@@ -70,6 +77,8 @@ class HabitNotifier {
         await isar.habits.put(habit);
       }
     });
+    
+    await NotificationService().cancelAllRemindersForHabit(habitId);
   }
 
   Future<void> logHabit(String habitId, DateTime logDate, LogStatus status) async {
@@ -117,6 +126,46 @@ class HabitNotifier {
           score.lastUpdated = DateTime.now();
         }
         await isar.consistencyScores.put(score);
+      }
+    });
+
+    if (status == LogStatus.done || status == LogStatus.doneViaTwoMinute) {
+      await NotificationService().cancelHabitRemindersForToday(habitId, normalizedDate);
+
+      // Trigger dependent habits if any
+      final dependentHabits = await isar.habits.filter()
+          .cueTypeEqualTo(CueType.afterHabit)
+          .cueValueEqualTo(habitId)
+          .isArchivedEqualTo(false)
+          .findAll();
+      
+      for (final dependent in dependentHabits) {
+        // Only trigger if not already logged today
+        final existingLog = await isar.habitLogs.filter()
+            .habitIdEqualTo(dependent.id.toString())
+            .dateEqualTo(normalizedDate)
+            .findFirst();
+        
+        final alreadyDone = existingLog?.status == LogStatus.done || existingLog?.status == LogStatus.doneViaTwoMinute;
+        if (!alreadyDone) {
+          await NotificationService().triggerAfterHabitNotification(dependent);
+        }
+      }
+    }
+  }
+
+  Future<void> updateEnvironmentReady(String habitId, DateTime logDate, bool isReady) async {
+    final normalizedDate = DateTime(logDate.year, logDate.month, logDate.day);
+    await isar.writeTxn(() async {
+      final log = await isar.habitLogs
+          .filter()
+          .habitIdEqualTo(habitId)
+          .dateEqualTo(normalizedDate)
+          .findFirst();
+
+      if (log != null) {
+        log.environmentReady = isReady;
+        await isar.habitLogs.put(log);
       }
     });
   }

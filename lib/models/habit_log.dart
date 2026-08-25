@@ -19,4 +19,5 @@ class HabitLog {
   
   late DateTime loggedAt;
   bool isBackfilled = false;
+  bool? environmentReady;
 }
