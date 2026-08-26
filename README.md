@@ -4,8 +4,7 @@ Most habit trackers measure the wrong thing. They measure outcomes—streaks, pe
 
 Forge is a habit-formation app built on the framework described in *Atomic Habits*. It doesn't care about your streak. It cares about your system.
 
-![Forge Hero Image Placeholder](assets/readme/hero-image.png)
-*(Note: Replace with a clean, un-framed screenshot of the Today screen showing a stacked habit line.)*
+
 
 ---
 
