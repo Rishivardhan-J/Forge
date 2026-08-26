@@ -6,7 +6,6 @@ import '../models/habit.dart';
 import '../models/habit_log.dart';
 import '../utils/date_time_utils.dart';
 import '../utils/habit_utils.dart';
-import 'habit_provider.dart';
 import 'user_settings_provider.dart';
 
 class ChartPoint {

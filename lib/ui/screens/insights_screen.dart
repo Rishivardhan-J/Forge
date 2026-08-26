@@ -322,7 +322,7 @@ class _BaselineCurvePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = AppTheme.borderStrong.withOpacity(0.3)
+      ..color = AppTheme.borderStrong.withValues(alpha: 0.3)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2;
 
@@ -342,7 +342,7 @@ class _BaselineCurvePainter extends CustomPainter {
     canvas.drawPath(path, paint);
 
     final paint2 = Paint()
-      ..color = AppTheme.borderStrong.withOpacity(0.15)
+      ..color = AppTheme.borderStrong.withValues(alpha: 0.15)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2;
 

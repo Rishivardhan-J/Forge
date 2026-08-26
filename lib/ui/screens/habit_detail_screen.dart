@@ -151,7 +151,7 @@ class HabitDetailScreen extends ConsumerWidget {
                 );
               },
               loading: () => const CircularProgressIndicator(),
-              error: (_, __) => const Text('Error loading score'),
+              error: (err, stack) => const Text('Error loading score'),
             ),
           ),
           const SizedBox(height: AppTheme.spacingXl),
@@ -187,7 +187,7 @@ class HabitDetailScreen extends ConsumerWidget {
       final log = logs.where((l) => l.date == current).firstOrNull;
       if (log?.status == LogStatus.missed || (log == null)) {
         missesFound++;
-      } else if (log?.status == LogStatus.excused) {
+      } else if (log.status == LogStatus.excused) {
         // Skip excused
       } else {
         break;
@@ -201,7 +201,7 @@ class HabitDetailScreen extends ConsumerWidget {
       return Container(
         padding: const EdgeInsets.all(AppTheme.spacingLg),
         decoration: BoxDecoration(
-          color: AppTheme.accentRecoverFill.withOpacity(0.1),
+          color: AppTheme.accentRecoverFill.withValues(alpha: 0.1),
           border: Border.all(color: AppTheme.accentRecoverFill),
           borderRadius: AppTheme.radiusCard,
         ),
@@ -252,11 +252,7 @@ class HabitDetailScreen extends ConsumerWidget {
       status = log?.status;
     }
 
-    if (status == null && !isScheduled) {
-      status = LogStatus.notScheduled;
-    } else if (status == null) {
-      status = LogStatus.missed;
-    }
+    status ??= isScheduled ? LogStatus.missed : LogStatus.notScheduled;
 
     Color color;
     switch (status) {
@@ -268,7 +264,7 @@ class HabitDetailScreen extends ConsumerWidget {
         color = AppTheme.accentRecoverFill;
         break;
       case LogStatus.notScheduled:
-        color = AppTheme.textMuted.withOpacity(0.3);
+        color = AppTheme.textMuted.withValues(alpha: 0.3);
         break;
       case LogStatus.excused:
         color = AppTheme.bgBase; 

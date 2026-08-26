@@ -21,6 +21,7 @@ class PermissionService {
     final status = await Permission.notification.status;
     if (status.isGranted) return true;
 
+    if (!context.mounted) return false;
     // Soft ask first
     final bool? proceed = await showDialog<bool>(
       context: context,
@@ -67,6 +68,7 @@ class PermissionService {
     final status = await Permission.locationWhenInUse.status;
     if (status.isGranted) return true;
 
+    if (!context.mounted) return false;
     final bool? proceed = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
@@ -120,6 +122,7 @@ class PermissionService {
     final status = await Permission.locationAlways.status;
     if (status.isGranted) return true;
 
+    if (!context.mounted) return false;
     final bool? proceed = await showDialog<bool>(
       context: context,
       barrierDismissible: false,

@@ -101,7 +101,7 @@ class GeofenceManager {
     }
 
     // Start or update
-    final isRunning = await _geofenceService.isRunningService;
+    final isRunning = _geofenceService.isRunningService;
     if (isRunning) {
       // Just clear and add new
       for (final g in geofences) {

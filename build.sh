@@ -1,4 +1,6 @@
 #!/bin/bash
-flutter pub get < /dev/null
-dart run build_runner build -d < /dev/null
-flutter run -d cph2491 < /dev/null
+flutter clean
+flutter pub get
+dart run build_runner build -d
+flutter pub run flutter_launcher_icons
+flutter run --release -d cph2491

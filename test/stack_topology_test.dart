@@ -9,7 +9,7 @@ void main() {
   late Isar isar;
   late StackNotifier stackNotifier;
 
-  Habit _createHabit(String name, {CueType cueType = CueType.time, String cueValue = '00:00', String? stackId, int stackOrder = 0}) {
+  Habit createHabit(String name, {CueType cueType = CueType.time, String cueValue = '00:00', String? stackId, int stackOrder = 0}) {
     return Habit()
       ..name = name
       ..cueType = cueType
@@ -45,8 +45,8 @@ void main() {
     test('wouldCreateCycle returns false for unconnected habits', () async {
       await isar.writeTxn(() async {
         await isar.habits.putAll([
-          _createHabit('H1'),
-          _createHabit('H2'),
+          createHabit('H1'),
+          createHabit('H2'),
         ]);
       });
       final result = await stackNotifier.wouldCreateCycle('1', '2');
@@ -56,9 +56,9 @@ void main() {
     test('wouldCreateCycle returns true if moving H1 after H2 creates a loop', () async {
       await isar.writeTxn(() async {
         await isar.habits.putAll([
-          _createHabit('H1'),
-          _createHabit('H2', cueType: CueType.afterHabit, cueValue: '1'),
-          _createHabit('H3', cueType: CueType.afterHabit, cueValue: '2'),
+          createHabit('H1'),
+          createHabit('H2', cueType: CueType.afterHabit, cueValue: '1'),
+          createHabit('H3', cueType: CueType.afterHabit, cueValue: '2'),
         ]);
       });
       
@@ -69,9 +69,9 @@ void main() {
     test('wouldCreateCycle returns false for valid reorders', () async {
       await isar.writeTxn(() async {
         await isar.habits.putAll([
-          _createHabit('H1'),
-          _createHabit('H2', cueType: CueType.afterHabit, cueValue: '1'),
-          _createHabit('H3', cueType: CueType.afterHabit, cueValue: '2'),
+          createHabit('H1'),
+          createHabit('H2', cueType: CueType.afterHabit, cueValue: '1'),
+          createHabit('H3', cueType: CueType.afterHabit, cueValue: '2'),
         ]);
       });
       
@@ -84,8 +84,8 @@ void main() {
     test('moveHabitAfter creates a new stack if target is standalone', () async {
       await isar.writeTxn(() async {
         await isar.habits.putAll([
-          _createHabit('H1'),
-          _createHabit('H2'),
+          createHabit('H1'),
+          createHabit('H2'),
         ]);
       });
 
@@ -112,8 +112,8 @@ void main() {
       await isar.writeTxn(() async {
         await isar.habitStacks.put(stack);
         await isar.habits.putAll([
-          _createHabit('H1', stackId: stack.id.toString(), stackOrder: 0),
-          _createHabit('H2', stackId: stack.id.toString(), stackOrder: 1, cueType: CueType.afterHabit, cueValue: '1'),
+          createHabit('H1', stackId: stack.id.toString(), stackOrder: 0),
+          createHabit('H2', stackId: stack.id.toString(), stackOrder: 1, cueType: CueType.afterHabit, cueValue: '1'),
         ]);
       });
 
@@ -136,9 +136,9 @@ void main() {
       await isar.writeTxn(() async {
         await isar.habitStacks.put(stack);
         await isar.habits.putAll([
-          _createHabit('H1', stackId: stack.id.toString(), stackOrder: 0),
-          _createHabit('H2', stackId: stack.id.toString(), stackOrder: 1, cueType: CueType.afterHabit, cueValue: '1'),
-          _createHabit('H3', stackId: stack.id.toString(), stackOrder: 2, cueType: CueType.afterHabit, cueValue: '2'),
+          createHabit('H1', stackId: stack.id.toString(), stackOrder: 0),
+          createHabit('H2', stackId: stack.id.toString(), stackOrder: 1, cueType: CueType.afterHabit, cueValue: '1'),
+          createHabit('H3', stackId: stack.id.toString(), stackOrder: 2, cueType: CueType.afterHabit, cueValue: '2'),
         ]);
       });
 
@@ -163,9 +163,9 @@ void main() {
       await isar.writeTxn(() async {
         await isar.habitStacks.put(stack);
         await isar.habits.putAll([
-          _createHabit('H1', stackId: stack.id.toString(), stackOrder: 0),
-          _createHabit('H2', stackId: stack.id.toString(), stackOrder: 1, cueType: CueType.afterHabit, cueValue: '1'),
-          _createHabit('H3', stackId: stack.id.toString(), stackOrder: 2, cueType: CueType.afterHabit, cueValue: '2'),
+          createHabit('H1', stackId: stack.id.toString(), stackOrder: 0),
+          createHabit('H2', stackId: stack.id.toString(), stackOrder: 1, cueType: CueType.afterHabit, cueValue: '1'),
+          createHabit('H3', stackId: stack.id.toString(), stackOrder: 2, cueType: CueType.afterHabit, cueValue: '2'),
         ]);
       });
 

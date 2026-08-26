@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:forge/ui/widgets/add_edit_habit_sheet.dart';
-import 'package:forge/theme/app_theme.dart';
 
 void main() {
   testWidgets('Save button is disabled when required fields are missing', (WidgetTester tester) async {

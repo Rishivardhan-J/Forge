@@ -10,6 +10,7 @@ import '../models/user_settings.dart';
 import '../utils/date_time_utils.dart';
 import '../utils/habit_utils.dart';
 import '../services/notification_service.dart';
+import '../services/widget_service.dart';
 import 'user_settings_provider.dart';
 
 final habitListProvider = StreamProvider<List<Habit>>((ref) {
@@ -58,11 +59,11 @@ class HabitNotifier {
       }
     });
     
-    // Notifications scheduling
     if (!habit.isArchived) {
       await NotificationService().scheduleHabitReminders(habit);
     }
     
+    await WidgetService.updateWidgetData(isar, userSettings);
     return habit;
   }
 
@@ -77,8 +78,8 @@ class HabitNotifier {
         await isar.habits.put(habit);
       }
     });
-    
     await NotificationService().cancelAllRemindersForHabit(habitId);
+    await WidgetService.updateWidgetData(isar, userSettings);
   }
 
   Future<void> logHabit(String habitId, DateTime logDate, LogStatus status) async {
@@ -152,6 +153,7 @@ class HabitNotifier {
         }
       }
     }
+    await WidgetService.updateWidgetData(isar, userSettings);
   }
 
   Future<void> updateEnvironmentReady(String habitId, DateTime logDate, bool isReady) async {

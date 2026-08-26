@@ -51,8 +51,9 @@ class _ChainBuilderSheetState extends ConsumerState<ChainBuilderSheet> {
                   ),
                   Expanded(
                     child: DragTarget<Habit>(
-                      onWillAccept: (habit) => true,
-                      onAccept: (habit) {
+                      onWillAcceptWithDetails: (details) => true,
+                      onAcceptWithDetails: (details) {
+                        final habit = details.data;
                         // Dropping in the empty space unstacks it
                         ref.read(stackNotifierProvider).moveHabitAfter(habit.id.toString(), null);
                       },
@@ -156,10 +157,12 @@ class _BuilderNode extends ConsumerWidget {
     );
 
     return DragTarget<Habit>(
-      onWillAccept: (dragged) {
-        return dragged != null && dragged.id != habit.id;
+      onWillAcceptWithDetails: (details) {
+        final dragged = details.data;
+        return dragged.id != habit.id;
       },
-      onAccept: (dragged) async {
+      onAcceptWithDetails: (details) async {
+        final dragged = details.data;
         final notifier = ref.read(stackNotifierProvider);
         
         // Cycle detection
@@ -193,7 +196,7 @@ class _BuilderNode extends ConsumerWidget {
             child: nodeWidget,
           ),
           child: Container(
-            color: candidateData.isNotEmpty ? AppTheme.accentGrowthFill.withOpacity(0.2) : Colors.transparent,
+            color: candidateData.isNotEmpty ? AppTheme.accentGrowthFill.withValues(alpha: 0.2) : Colors.transparent,
             child: nodeWidget,
           ),
         );

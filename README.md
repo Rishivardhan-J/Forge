@@ -1,17 +1,23 @@
-# forge
+# Forge
 
-A new Flutter project.
+Forge is a privacy-first, offline-only habit tracking application built with Flutter.
 
-## Getting Started
+## Core Features
+- **Habit Tracking:** Track daily habits using the Transit Map visualization and Evidence Logs.
+- **Insights:** Monitor your consistency and detect friction points preventing you from completing habits.
+- **Geofencing & Context-Aware Notifications:** Set notifications that trigger based on location or habit stacking.
+- **Data Export & Backup:** Export your history to CSV or PDF, and backup/restore via JSON.
 
-This project is a starting point for a Flutter application.
+## Product Boundaries & Architecture
+**Important Note:** The original specification evaluated "accountability pairing" (multi-user sharing of habit statuses). This has been **permanently excluded** as an intentional product decision. 
 
-A few resources to get you started if this is your first Flutter project:
+Every phase of Forge has been built on one core architectural commitment: **zero network dependency, on-device-only data, privacy-first by construction.** Sharing habit state between users requires a backend server or peer-to-peer networking, which breaks this commitment.
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+Forge is a **single-user, offline-first product by design, for this version and for every version reasonably expected after it**. Multi-user features are not on the product roadmap.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Building the App
+```bash
+flutter pub get
+dart run build_runner build -d
+flutter run --release
+```

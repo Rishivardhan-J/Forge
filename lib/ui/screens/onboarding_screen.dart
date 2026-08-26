@@ -96,8 +96,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final reduceMotion = ref.watch(userSettingsProvider).reduceMotion;
-    
     return Scaffold(
       backgroundColor: AppTheme.bgBase,
       body: SafeArea(

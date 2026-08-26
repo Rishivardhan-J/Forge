@@ -164,8 +164,7 @@ class _TransitMapLineState extends ConsumerState<TransitMapLine> with SingleTick
                     if (status == LogStatus.excused) statusLabel = 'excused';
                     if (status == LogStatus.notScheduled) statusLabel = 'not scheduled today';
 
-                    final semanticsLabel = '${h.name}, $statusLabel' + 
-                        (widget.stack != null ? ', part of ${widget.stack!.name} stack' : '');
+                    final semanticsLabel = '${h.name}, $statusLabel${widget.stack != null ? ', part of ${widget.stack!.name} stack' : ''}';
 
                     return Container(
                       width: spacing,
@@ -298,7 +297,7 @@ class _StationNode extends StatelessWidget {
         strokeColor = AppTheme.accentRecoverFill;
         break;
       case LogStatus.notScheduled:
-        strokeColor = AppTheme.textMuted.withOpacity(0.3);
+        strokeColor = AppTheme.textMuted.withValues(alpha: 0.3);
         break;
       case LogStatus.excused:
         strokeColor = AppTheme.textSecondary;

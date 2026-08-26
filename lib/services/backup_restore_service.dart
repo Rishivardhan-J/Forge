@@ -1,3 +1,4 @@
+// ignore_for_file: avoid_print, deprecated_member_use
 import 'dart:convert';
 import 'dart:io';
 
@@ -5,8 +6,6 @@ import 'package:file_picker/file_picker.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
-
-import '../database/isar_provider.dart';
 import '../models/consistency_score.dart';
 import '../models/environment_tag.dart';
 import '../models/habit.dart';
@@ -55,7 +54,7 @@ class BackupRestoreService {
         allowedExtensions: ['json'],
       );
 
-      if (result != null && result.isNotEmpty && result.single.path != null) {
+      if (result.isNotEmpty && result.single.path != null) {
         final file = File(result.single.path!);
         final jsonString = await file.readAsString();
         final Map<String, dynamic> data = jsonDecode(jsonString);

@@ -154,14 +154,14 @@ class _AddEditHabitSheetState extends ConsumerState<AddEditHabitSheet> {
 
     if (mounted) {
       if (!(await PermissionService.hasAskedNotification())) {
+        if (!mounted) return;
         await PermissionService.checkAndRequestNotificationPermission(context);
       }
-      if (mounted) {
-        if (widget.isOnboarding) {
-          widget.onSaved?.call();
-        } else {
-          Navigator.pop(context);
-        }
+      if (!mounted) return;
+      if (widget.isOnboarding) {
+        widget.onSaved?.call();
+      } else {
+        Navigator.pop(context);
       }
     }
   }
@@ -189,7 +189,7 @@ class _AddEditHabitSheetState extends ConsumerState<AddEditHabitSheet> {
         return;
       }
 
-      final pos = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+      final pos = await Geolocator.getCurrentPosition(locationSettings: const LocationSettings(accuracy: LocationAccuracy.high));
       
       // Also request background permission right after so geofencing can actually work
       if (mounted) {
@@ -333,7 +333,7 @@ class _AddEditHabitSheetState extends ConsumerState<AddEditHabitSheet> {
             return FilterChip(
               label: Text(id.statement),
               selected: isSelected,
-              selectedColor: AppTheme.accentIdentityFill.withOpacity(0.2),
+              selectedColor: AppTheme.accentIdentityFill.withValues(alpha: 0.2),
               checkmarkColor: AppTheme.accentIdentityFill,
               labelStyle: TextStyle(color: isSelected ? AppTheme.accentIdentityText : AppTheme.textPrimary),
               onSelected: (selected) {
@@ -346,7 +346,7 @@ class _AddEditHabitSheetState extends ConsumerState<AddEditHabitSheet> {
         );
       },
       loading: () => const SizedBox.shrink(),
-      error: (_, __) => const SizedBox.shrink(),
+      error: (err, stack) => const SizedBox.shrink(),
     );
   }
 
@@ -372,7 +372,7 @@ class _AddEditHabitSheetState extends ConsumerState<AddEditHabitSheet> {
         );
       },
       loading: () => const SizedBox.shrink(),
-      error: (_, __) => const SizedBox.shrink(),
+      error: (err, stack) => const SizedBox.shrink(),
     );
   }
 
@@ -412,7 +412,7 @@ class _AddEditHabitSheetState extends ConsumerState<AddEditHabitSheet> {
               return const Text('No other habits available', style: TextStyle(color: AppTheme.textMuted));
             }
             return DropdownButtonFormField<String>(
-              value: filtered.any((h) => h.id.toString() == _cueValueController.text) ? _cueValueController.text : null,
+              initialValue: filtered.any((h) => h.id.toString() == _cueValueController.text) ? _cueValueController.text : null,
               items: filtered.map((h) => DropdownMenuItem(value: h.id.toString(), child: Text(h.name))).toList(),
               onChanged: (val) {
                 if (val != null) _cueValueController.text = val;
@@ -421,7 +421,7 @@ class _AddEditHabitSheetState extends ConsumerState<AddEditHabitSheet> {
             );
           },
           loading: () => const CircularProgressIndicator(),
-          error: (_, __) => const SizedBox.shrink(),
+          error: (err, stack) => const SizedBox.shrink(),
         );
     }
   }
@@ -485,7 +485,7 @@ class _AddEditHabitSheetState extends ConsumerState<AddEditHabitSheet> {
         if (stacks.isEmpty) return const Text('No stacks available. Create one in the Chain Builder.', style: TextStyle(color: AppTheme.textMuted));
         
         return DropdownButtonFormField<String>(
-          value: stacks.any((s) => s.id.toString() == _selectedStackId) ? _selectedStackId : null,
+          initialValue: stacks.any((s) => s.id.toString() == _selectedStackId) ? _selectedStackId : null,
           items: [
             const DropdownMenuItem(value: null, child: Text('None (Standalone)')),
             ...stacks.map((s) => DropdownMenuItem(value: s.id.toString(), child: Text(s.name))),
@@ -499,7 +499,7 @@ class _AddEditHabitSheetState extends ConsumerState<AddEditHabitSheet> {
         );
       },
       loading: () => const CircularProgressIndicator(),
-      error: (_, __) => const SizedBox.shrink(),
+      error: (err, stack) => const SizedBox.shrink(),
     );
   }
 }

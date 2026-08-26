@@ -4,7 +4,6 @@ import 'package:isar/isar.dart';
 import '../database/isar_provider.dart';
 import '../models/habit.dart';
 import '../models/habit_stack.dart';
-import '../providers/habit_provider.dart';
 
 final stackListProvider = StreamProvider<List<HabitStack>>((ref) {
   final isar = ref.watch(isarProvider);

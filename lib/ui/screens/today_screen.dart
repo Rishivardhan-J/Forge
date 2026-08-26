@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 
 import '../../models/habit.dart';
 import '../../models/habit_log.dart';
@@ -162,7 +161,7 @@ class _EmptyStatePainter extends CustomPainter {
       ..style = PaintingStyle.stroke;
 
     final progressPaint = Paint()
-      ..color = AppTheme.accentGrowthFill.withOpacity(0.5)
+      ..color = AppTheme.accentGrowthFill.withValues(alpha: 0.5)
       ..strokeWidth = 4
       ..style = PaintingStyle.stroke;
 
@@ -356,7 +355,7 @@ class _StatusIndicator extends StatelessWidget {
           child: const Icon(Icons.remove, size: 16, color: AppTheme.textSecondary),
         );
       case LogStatus.notScheduled:
-        color = AppTheme.textMuted.withOpacity(0.3);
+        color = AppTheme.textMuted.withValues(alpha: 0.3);
         break;
       case null:
         return Container(

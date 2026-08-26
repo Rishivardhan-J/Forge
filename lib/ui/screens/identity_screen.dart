@@ -59,7 +59,7 @@ class IdentityScreen extends ConsumerWidget {
 class _IdentityOrbitSystem extends ConsumerStatefulWidget {
   final Identity identity;
 
-  const _IdentityOrbitSystem({super.key, required this.identity});
+  const _IdentityOrbitSystem({required this.identity});
 
   @override
   ConsumerState<_IdentityOrbitSystem> createState() => _IdentityOrbitSystemState();
