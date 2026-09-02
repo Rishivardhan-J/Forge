@@ -3,12 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../models/habit.dart';
 import '../../models/habit_log.dart';
+import '../../models/habit_stack.dart';
 import '../../providers/habit_provider.dart';
 import '../../providers/user_settings_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/date_time_utils.dart';
 import '../../utils/habit_utils.dart';
 import '../../providers/stack_provider.dart';
+import '../../providers/insights_provider.dart';
 import '../widgets/add_edit_habit_sheet.dart';
 import '../widgets/transit_map_line.dart';
 import 'habit_detail_screen.dart';
@@ -23,11 +25,17 @@ class TodayScreen extends ConsumerWidget {
     final today = DateTimeUtils.resolveAppToday(DateTime.now(), userSettings.dayStartTime);
 
     final stacksAsync = ref.watch(stackListProvider);
+    final overviewAsync = ref.watch(insightsOverviewProvider);
+
+    String headerText = 'Today';
+    if (overviewAsync.value?.strongestIdentityStatement != null) {
+      headerText = overviewAsync.value!.strongestIdentityStatement!;
+    }
 
     return Scaffold(
       backgroundColor: AppTheme.bgBase,
       appBar: AppBar(
-        title: const Text('Today'),
+        title: Text(headerText),
       ),
       body: habitsAsync.when(
         data: (habits) {
@@ -223,48 +231,66 @@ class _HabitRow extends ConsumerWidget {
 
     return Opacity(
       opacity: opacity,
-      child: GestureDetector(
-        onTap: () {
-          if (!isScheduled && todayStatus == LogStatus.notScheduled) {
-            // Unscheduled and no log -> navigate to detail, do not show log choice
-            Navigator.push(context, MaterialPageRoute(builder: (_) => HabitDetailScreen(habit: habit)));
-            return;
+      child: Dismissible(
+        key: ValueKey(habit.id),
+        direction: DismissDirection.endToStart,
+        background: Container(
+          alignment: Alignment.centerRight,
+          padding: const EdgeInsets.only(right: AppTheme.spacingXl),
+          color: AppTheme.bgSurface,
+          child: const Icon(Icons.archive_outlined, color: AppTheme.textSecondary),
+        ),
+        confirmDismiss: (direction) async {
+          final stacks = ref.read(stackListProvider).valueOrNull;
+          HabitStack? currentStack;
+          if (stacks != null && habit.stackId != null) {
+            currentStack = stacks.where((s) => s.id.toString() == habit.stackId).firstOrNull;
           }
-          // Primary logging action
-          _showLogChoice(context, ref);
+          return await HabitUtils.confirmArchive(context, ref, habit, currentStack);
         },
-        onLongPress: () {
-          // Secondary action: Excused
-          _logStatus(context, ref, LogStatus.excused);
-        },
-        child: Card(
-          child: Padding(
-            padding: const EdgeInsets.all(AppTheme.spacingXl),
-            child: Row(
-              children: [
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => HabitDetailScreen(habit: habit)));
-                    },
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          habit.name,
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                        const SizedBox(height: AppTheme.spacingSm),
-                        Text(
-                          _formatCue(habit),
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                      ],
+        child: GestureDetector(
+          onTap: () {
+            if (!isScheduled && todayStatus == LogStatus.notScheduled) {
+              // Unscheduled and no log -> navigate to detail, do not show log choice
+              Navigator.push(context, MaterialPageRoute(builder: (_) => HabitDetailScreen(habit: habit)));
+              return;
+            }
+            // Primary logging action
+            _showLogChoice(context, ref);
+          },
+          onLongPress: () {
+            // Secondary action: Excused
+            _logStatus(context, ref, LogStatus.excused);
+          },
+          child: Card(
+            child: Padding(
+              padding: const EdgeInsets.all(AppTheme.spacingXl),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => HabitDetailScreen(habit: habit)));
+                      },
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            habit.name,
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          const SizedBox(height: AppTheme.spacingSm),
+                          Text(
+                            _formatCue(habit),
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-                _StatusIndicator(status: todayStatus),
-              ],
+                  _StatusIndicator(status: todayStatus),
+                ],
+              ),
             ),
           ),
         ),

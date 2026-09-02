@@ -4,6 +4,8 @@ import 'package:isar/isar.dart';
 import '../database/isar_provider.dart';
 import '../models/habit.dart';
 import '../models/habit_log.dart';
+import '../models/identity.dart';
+import '../models/consistency_score.dart';
 import '../utils/date_time_utils.dart';
 import '../utils/habit_utils.dart';
 import 'user_settings_provider.dart';
@@ -185,4 +187,123 @@ final frictionReportProvider = FutureProvider<List<FrictionReportEntry>>((ref) a
   
   report.sort((a, b) => b.unreadyCount.compareTo(a.unreadyCount));
   return report.take(5).toList();
+});
+
+class InsightsOverview {
+  final int completedToday;
+  final int scheduledToday;
+  final double averageConsistency;
+  final String? strongestIdentityStatement;
+  final int strongestIdentityVotes;
+  final String? mostConsistentHabitName;
+  final double mostConsistentHabitScore;
+  final String weekOverWeekSentence;
+
+  InsightsOverview({
+    required this.completedToday,
+    required this.scheduledToday,
+    required this.averageConsistency,
+    this.strongestIdentityStatement,
+    required this.strongestIdentityVotes,
+    this.mostConsistentHabitName,
+    required this.mostConsistentHabitScore,
+    required this.weekOverWeekSentence,
+  });
+}
+
+final insightsOverviewProvider = FutureProvider<InsightsOverview>((ref) async {
+  final isar = ref.watch(isarProvider);
+  final userSettings = ref.watch(userSettingsProvider);
+  final today = DateTimeUtils.resolveAppToday(DateTime.now(), userSettings.dayStartTime);
+
+  // 1. Today's snapshot
+  final unarchivedHabits = await isar.habits.filter().isArchivedEqualTo(false).findAll();
+  
+  int completedToday = 0;
+  int scheduledToday = 0;
+
+  for (final habit in unarchivedHabits) {
+    if (HabitUtils.isScheduledOn(habit, today)) {
+      scheduledToday++;
+      final log = await isar.habitLogs.filter()
+          .habitIdEqualTo(habit.id.toString())
+          .dateEqualTo(today)
+          .findFirst();
+      if (log != null && (log.status == LogStatus.done || log.status == LogStatus.doneViaTwoMinute)) {
+        completedToday++;
+      }
+    }
+  }
+
+  // 2. Aggregate consistency
+  double averageConsistency = 0.0;
+  final chartData = await ref.watch(insightsChartProvider(null).future);
+  if (chartData.historical.isNotEmpty) {
+    averageConsistency = chartData.historical.last.score;
+  }
+
+  // 3. Strongest identity
+  final identities = await isar.identitys.where().findAll();
+  String? strongestStatement;
+  int highestVotes = 0;
+
+  for (final identity in identities) {
+    final nonArchivedLinked = identity.linkedHabitIds.where((id) => unarchivedHabits.any((h) => h.id.toString() == id)).toList();
+    if (nonArchivedLinked.isNotEmpty) {
+      final count = await isar.habitLogs.filter()
+          .anyOf(nonArchivedLinked, (q, String habitId) => q.habitIdEqualTo(habitId))
+          .and()
+          .group((q) => q.statusEqualTo(LogStatus.done).or().statusEqualTo(LogStatus.doneViaTwoMinute))
+          .count();
+      if (count >= highestVotes) {
+        highestVotes = count;
+        strongestStatement = identity.statement;
+      }
+    }
+  }
+
+  // 4. Most consistent habit
+  String? bestHabitName;
+  double bestHabitScore = 0.0;
+
+  final scores = await isar.consistencyScores.where().sortByScoreDesc().findAll();
+  for (final score in scores) {
+    final habit = unarchivedHabits.where((h) => h.id.toString() == score.habitId).firstOrNull;
+    if (habit != null) {
+      bestHabitName = habit.name;
+      bestHabitScore = score.score;
+      break;
+    }
+  }
+
+  // 5. Week-over-week sentence
+  String weekSentence = "Not enough history yet.";
+  if (chartData.historical.length >= 7) {
+    final todayScore = averageConsistency;
+    final sevenDaysAgo = today.subtract(const Duration(days: 7));
+    // Try to find the point exactly 7 days ago, or the closest before it
+    final lastWeekPoint = chartData.historical.reversed.firstWhere(
+      (p) => p.date.isBefore(sevenDaysAgo) || p.date.isAtSameMomentAs(sevenDaysAgo),
+      orElse: () => chartData.historical.first,
+    );
+    final diff = todayScore - lastWeekPoint.score;
+    if (diff.abs() < 1.0) {
+      weekSentence = "Holding steady this week.";
+    } else if (diff > 0) {
+      weekSentence = "Up ${diff.toStringAsFixed(1)} points from last week.";
+    } else {
+      weekSentence = "Down ${diff.abs().toStringAsFixed(1)} points from last week.";
+    }
+  }
+
+  return InsightsOverview(
+    completedToday: completedToday,
+    scheduledToday: scheduledToday,
+    averageConsistency: averageConsistency,
+    strongestIdentityStatement: strongestStatement,
+    strongestIdentityVotes: highestVotes,
+    mostConsistentHabitName: bestHabitName,
+    mostConsistentHabitScore: bestHabitScore,
+    weekOverWeekSentence: weekSentence,
+  );
 });

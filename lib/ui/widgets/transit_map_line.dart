@@ -182,7 +182,7 @@ class _TransitMapLineState extends ConsumerState<TransitMapLine> with SingleTick
                             _showLogChoice(context, ref, h, today);
                           } : null,
                           onLongPress: widget.interactive ? () {
-                            Navigator.push(context, MaterialPageRoute(builder: (_) => HabitDetailScreen(habit: h)));
+                            _showQuickActionsSheet(context, ref, h);
                           } : null,
                           child: Container(
                             constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
@@ -190,7 +190,7 @@ class _TransitMapLineState extends ConsumerState<TransitMapLine> with SingleTick
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                _StationNode(
+                                StationNode(
                                   status: statuses[i],
                                   accentColor: lineColor,
                                   size: stationSize,
@@ -267,14 +267,65 @@ class _TransitMapLineState extends ConsumerState<TransitMapLine> with SingleTick
       ),
     );
   }
+  void _showQuickActionsSheet(BuildContext context, WidgetRef ref, Habit habit) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppTheme.bgSurfaceRaised,
+      builder: (ctx) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.info_outline, color: AppTheme.textPrimary),
+                title: const Text('View Detail'),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => HabitDetailScreen(habit: habit)));
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.pause_circle_outline, color: AppTheme.textPrimary),
+                title: const Text('Pause'),
+                onTap: () async {
+                  Navigator.pop(ctx);
+                  final today = DateTimeUtils.resolveAppToday(DateTime.now(), ref.read(userSettingsProvider).dayStartTime);
+                  final date = await showDatePicker(
+                    context: context,
+                    initialDate: today.add(const Duration(days: 7)),
+                    firstDate: today,
+                    lastDate: today.add(const Duration(days: 365)),
+                    helpText: 'Pause Until',
+                  );
+                  if (date != null) {
+                    final updated = habit..pausedUntil = date;
+                    await ref.read(habitNotifierProvider).saveHabit(updated);
+                  }
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.archive_outlined, color: AppTheme.textSecondary),
+                title: const Text('Archive'),
+                onTap: () async {
+                  Navigator.pop(ctx);
+                  await HabitUtils.confirmArchive(context, ref, habit, widget.stack);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 }
 
-class _StationNode extends StatelessWidget {
+class StationNode extends StatelessWidget {
   final LogStatus? status;
   final Color accentColor;
   final double size;
 
-  const _StationNode({
+  const StationNode({
+    super.key,
     required this.status,
     required this.accentColor,
     required this.size,

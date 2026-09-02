@@ -3,34 +3,39 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../screens/identity_screen.dart';
 import '../screens/insights_screen.dart';
-import '../screens/settings_screen.dart';
 import '../screens/today_screen.dart';
+import '../screens/dashboard_screen.dart';
+import '../screens/settings_screen.dart';
 import '../../providers/habit_provider.dart';
 import '../../models/habit.dart';
 import '../../services/geofence_manager.dart';
 
 class AppShell extends ConsumerStatefulWidget {
-  const AppShell({super.key});
+  final int initialTab;
+  const AppShell({super.key, this.initialTab = 0});
 
   @override
   ConsumerState<AppShell> createState() => _AppShellState();
 }
 
 class _AppShellState extends ConsumerState<AppShell> {
-  int _currentIndex = 0;
-
-  final List<Widget> _screens = const [
-    TodayScreen(),
-    IdentityScreen(),
-    InsightsScreen(),
-    SettingsScreen(),
-  ];
+  late int _currentIndex;
 
   @override
   void initState() {
     super.initState();
+    _currentIndex = widget.initialTab;
     GeofenceManager().init();
   }
+
+  // A deliberate, documented exception to an established rule: the 4-tab bottom nav was revisited to add Dashboard.
+  final List<Widget> _screens = const [
+    TodayScreen(),
+    DashboardScreen(),
+    IdentityScreen(),
+    InsightsScreen(),
+    SettingsScreen(),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -54,6 +59,11 @@ class _AppShellState extends ConsumerState<AppShell> {
             icon: Icon(Icons.today_outlined),
             activeIcon: Icon(Icons.today),
             label: 'Today',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.dashboard_outlined),
+            activeIcon: Icon(Icons.dashboard),
+            label: 'Dashboard',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person_outline),

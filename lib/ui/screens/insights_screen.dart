@@ -104,9 +104,9 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen> {
         color: isSelected ? AppTheme.textPrimary : AppTheme.textSecondary,
         fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
       ),
-      side: BorderSide(
-        color: isSelected ? AppTheme.borderDefault : Colors.transparent,
-      ),
+      side: isSelected 
+          ? const BorderSide(color: AppTheme.borderStrong)
+          : BorderSide.none,
     );
   }
 

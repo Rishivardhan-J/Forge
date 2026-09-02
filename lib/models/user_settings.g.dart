@@ -17,28 +17,39 @@ const UserSettingsSchema = CollectionSchema(
   name: r'UserSettings',
   id: 4939698790990493221,
   properties: {
-    r'dayStartTime': PropertySchema(
+    r'avatarAccent': PropertySchema(
       id: 0,
+      name: r'avatarAccent',
+      type: IsarType.byte,
+      enumMap: _UserSettingsavatarAccentEnumValueMap,
+    ),
+    r'dayStartTime': PropertySchema(
+      id: 1,
       name: r'dayStartTime',
       type: IsarType.string,
     ),
+    r'displayName': PropertySchema(
+      id: 2,
+      name: r'displayName',
+      type: IsarType.string,
+    ),
     r'listViewDefault': PropertySchema(
-      id: 1,
+      id: 3,
       name: r'listViewDefault',
       type: IsarType.bool,
     ),
     r'onboardingCompleted': PropertySchema(
-      id: 2,
+      id: 4,
       name: r'onboardingCompleted',
       type: IsarType.bool,
     ),
     r'reduceMotion': PropertySchema(
-      id: 3,
+      id: 5,
       name: r'reduceMotion',
       type: IsarType.bool,
     ),
     r'weeklyReviewEnabled': PropertySchema(
-      id: 4,
+      id: 6,
       name: r'weeklyReviewEnabled',
       type: IsarType.bool,
     )
@@ -64,6 +75,12 @@ int _userSettingsEstimateSize(
 ) {
   var bytesCount = offsets.last;
   bytesCount += 3 + object.dayStartTime.length * 3;
+  {
+    final value = object.displayName;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
   return bytesCount;
 }
 
@@ -73,11 +90,13 @@ void _userSettingsSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeString(offsets[0], object.dayStartTime);
-  writer.writeBool(offsets[1], object.listViewDefault);
-  writer.writeBool(offsets[2], object.onboardingCompleted);
-  writer.writeBool(offsets[3], object.reduceMotion);
-  writer.writeBool(offsets[4], object.weeklyReviewEnabled);
+  writer.writeByte(offsets[0], object.avatarAccent.index);
+  writer.writeString(offsets[1], object.dayStartTime);
+  writer.writeString(offsets[2], object.displayName);
+  writer.writeBool(offsets[3], object.listViewDefault);
+  writer.writeBool(offsets[4], object.onboardingCompleted);
+  writer.writeBool(offsets[5], object.reduceMotion);
+  writer.writeBool(offsets[6], object.weeklyReviewEnabled);
 }
 
 UserSettings _userSettingsDeserialize(
@@ -87,12 +106,16 @@ UserSettings _userSettingsDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = UserSettings();
-  object.dayStartTime = reader.readString(offsets[0]);
+  object.avatarAccent = _UserSettingsavatarAccentValueEnumMap[
+          reader.readByteOrNull(offsets[0])] ??
+      AvatarAccent.teal;
+  object.dayStartTime = reader.readString(offsets[1]);
+  object.displayName = reader.readStringOrNull(offsets[2]);
   object.id = id;
-  object.listViewDefault = reader.readBool(offsets[1]);
-  object.onboardingCompleted = reader.readBool(offsets[2]);
-  object.reduceMotion = reader.readBool(offsets[3]);
-  object.weeklyReviewEnabled = reader.readBool(offsets[4]);
+  object.listViewDefault = reader.readBool(offsets[3]);
+  object.onboardingCompleted = reader.readBool(offsets[4]);
+  object.reduceMotion = reader.readBool(offsets[5]);
+  object.weeklyReviewEnabled = reader.readBool(offsets[6]);
   return object;
 }
 
@@ -104,19 +127,34 @@ P _userSettingsDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
-      return (reader.readString(offset)) as P;
+      return (_UserSettingsavatarAccentValueEnumMap[
+              reader.readByteOrNull(offset)] ??
+          AvatarAccent.teal) as P;
     case 1:
-      return (reader.readBool(offset)) as P;
+      return (reader.readString(offset)) as P;
     case 2:
-      return (reader.readBool(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 3:
       return (reader.readBool(offset)) as P;
     case 4:
+      return (reader.readBool(offset)) as P;
+    case 5:
+      return (reader.readBool(offset)) as P;
+    case 6:
       return (reader.readBool(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
 }
+
+const _UserSettingsavatarAccentEnumValueMap = {
+  'teal': 0,
+  'purple': 1,
+};
+const _UserSettingsavatarAccentValueEnumMap = {
+  0: AvatarAccent.teal,
+  1: AvatarAccent.purple,
+};
 
 Id _userSettingsGetId(UserSettings object) {
   return object.id;
@@ -212,6 +250,62 @@ extension UserSettingsQueryWhere
 
 extension UserSettingsQueryFilter
     on QueryBuilder<UserSettings, UserSettings, QFilterCondition> {
+  QueryBuilder<UserSettings, UserSettings, QAfterFilterCondition>
+      avatarAccentEqualTo(AvatarAccent value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'avatarAccent',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<UserSettings, UserSettings, QAfterFilterCondition>
+      avatarAccentGreaterThan(
+    AvatarAccent value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'avatarAccent',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<UserSettings, UserSettings, QAfterFilterCondition>
+      avatarAccentLessThan(
+    AvatarAccent value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'avatarAccent',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<UserSettings, UserSettings, QAfterFilterCondition>
+      avatarAccentBetween(
+    AvatarAccent lower,
+    AvatarAccent upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'avatarAccent',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
   QueryBuilder<UserSettings, UserSettings, QAfterFilterCondition>
       dayStartTimeEqualTo(
     String value, {
@@ -348,6 +442,160 @@ extension UserSettingsQueryFilter
     });
   }
 
+  QueryBuilder<UserSettings, UserSettings, QAfterFilterCondition>
+      displayNameIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'displayName',
+      ));
+    });
+  }
+
+  QueryBuilder<UserSettings, UserSettings, QAfterFilterCondition>
+      displayNameIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'displayName',
+      ));
+    });
+  }
+
+  QueryBuilder<UserSettings, UserSettings, QAfterFilterCondition>
+      displayNameEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'displayName',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<UserSettings, UserSettings, QAfterFilterCondition>
+      displayNameGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'displayName',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<UserSettings, UserSettings, QAfterFilterCondition>
+      displayNameLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'displayName',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<UserSettings, UserSettings, QAfterFilterCondition>
+      displayNameBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'displayName',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<UserSettings, UserSettings, QAfterFilterCondition>
+      displayNameStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'displayName',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<UserSettings, UserSettings, QAfterFilterCondition>
+      displayNameEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'displayName',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<UserSettings, UserSettings, QAfterFilterCondition>
+      displayNameContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'displayName',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<UserSettings, UserSettings, QAfterFilterCondition>
+      displayNameMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'displayName',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<UserSettings, UserSettings, QAfterFilterCondition>
+      displayNameIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'displayName',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<UserSettings, UserSettings, QAfterFilterCondition>
+      displayNameIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'displayName',
+        value: '',
+      ));
+    });
+  }
+
   QueryBuilder<UserSettings, UserSettings, QAfterFilterCondition> idEqualTo(
       Id value) {
     return QueryBuilder.apply(this, (query) {
@@ -450,6 +698,19 @@ extension UserSettingsQueryLinks
 
 extension UserSettingsQuerySortBy
     on QueryBuilder<UserSettings, UserSettings, QSortBy> {
+  QueryBuilder<UserSettings, UserSettings, QAfterSortBy> sortByAvatarAccent() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'avatarAccent', Sort.asc);
+    });
+  }
+
+  QueryBuilder<UserSettings, UserSettings, QAfterSortBy>
+      sortByAvatarAccentDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'avatarAccent', Sort.desc);
+    });
+  }
+
   QueryBuilder<UserSettings, UserSettings, QAfterSortBy> sortByDayStartTime() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'dayStartTime', Sort.asc);
@@ -460,6 +721,19 @@ extension UserSettingsQuerySortBy
       sortByDayStartTimeDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'dayStartTime', Sort.desc);
+    });
+  }
+
+  QueryBuilder<UserSettings, UserSettings, QAfterSortBy> sortByDisplayName() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'displayName', Sort.asc);
+    });
+  }
+
+  QueryBuilder<UserSettings, UserSettings, QAfterSortBy>
+      sortByDisplayNameDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'displayName', Sort.desc);
     });
   }
 
@@ -521,6 +795,19 @@ extension UserSettingsQuerySortBy
 
 extension UserSettingsQuerySortThenBy
     on QueryBuilder<UserSettings, UserSettings, QSortThenBy> {
+  QueryBuilder<UserSettings, UserSettings, QAfterSortBy> thenByAvatarAccent() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'avatarAccent', Sort.asc);
+    });
+  }
+
+  QueryBuilder<UserSettings, UserSettings, QAfterSortBy>
+      thenByAvatarAccentDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'avatarAccent', Sort.desc);
+    });
+  }
+
   QueryBuilder<UserSettings, UserSettings, QAfterSortBy> thenByDayStartTime() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'dayStartTime', Sort.asc);
@@ -531,6 +818,19 @@ extension UserSettingsQuerySortThenBy
       thenByDayStartTimeDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'dayStartTime', Sort.desc);
+    });
+  }
+
+  QueryBuilder<UserSettings, UserSettings, QAfterSortBy> thenByDisplayName() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'displayName', Sort.asc);
+    });
+  }
+
+  QueryBuilder<UserSettings, UserSettings, QAfterSortBy>
+      thenByDisplayNameDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'displayName', Sort.desc);
     });
   }
 
@@ -604,10 +904,23 @@ extension UserSettingsQuerySortThenBy
 
 extension UserSettingsQueryWhereDistinct
     on QueryBuilder<UserSettings, UserSettings, QDistinct> {
+  QueryBuilder<UserSettings, UserSettings, QDistinct> distinctByAvatarAccent() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'avatarAccent');
+    });
+  }
+
   QueryBuilder<UserSettings, UserSettings, QDistinct> distinctByDayStartTime(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'dayStartTime', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<UserSettings, UserSettings, QDistinct> distinctByDisplayName(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'displayName', caseSensitive: caseSensitive);
     });
   }
 
@@ -647,9 +960,22 @@ extension UserSettingsQueryProperty
     });
   }
 
+  QueryBuilder<UserSettings, AvatarAccent, QQueryOperations>
+      avatarAccentProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'avatarAccent');
+    });
+  }
+
   QueryBuilder<UserSettings, String, QQueryOperations> dayStartTimeProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'dayStartTime');
+    });
+  }
+
+  QueryBuilder<UserSettings, String?, QQueryOperations> displayNameProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'displayName');
     });
   }
 

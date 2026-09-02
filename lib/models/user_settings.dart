@@ -2,6 +2,11 @@ import 'package:isar/isar.dart';
 
 part 'user_settings.g.dart';
 
+enum AvatarAccent {
+  teal,
+  purple
+}
+
 @collection
 class UserSettings {
   Id id = Isar.autoIncrement;
@@ -12,12 +17,19 @@ class UserSettings {
   bool weeklyReviewEnabled = true;
   bool onboardingCompleted = false;
 
+  String? displayName;
+  
+  @enumerated
+  AvatarAccent avatarAccent = AvatarAccent.teal;
+
   UserSettings copyWith({
     String? dayStartTime,
     bool? reduceMotion,
     bool? listViewDefault,
     bool? weeklyReviewEnabled,
     bool? onboardingCompleted,
+    String? displayName,
+    AvatarAccent? avatarAccent,
   }) {
     return UserSettings()
       ..id = id
@@ -25,6 +37,8 @@ class UserSettings {
       ..reduceMotion = reduceMotion ?? this.reduceMotion
       ..listViewDefault = listViewDefault ?? this.listViewDefault
       ..weeklyReviewEnabled = weeklyReviewEnabled ?? this.weeklyReviewEnabled
-      ..onboardingCompleted = onboardingCompleted ?? this.onboardingCompleted;
+      ..onboardingCompleted = onboardingCompleted ?? this.onboardingCompleted
+      ..displayName = displayName ?? this.displayName
+      ..avatarAccent = avatarAccent ?? this.avatarAccent;
   }
 }

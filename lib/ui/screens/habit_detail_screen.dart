@@ -8,6 +8,7 @@ import '../../models/habit_stack.dart';
 import '../../providers/habit_provider.dart';
 import '../../providers/stack_provider.dart';
 import '../../providers/user_settings_provider.dart';
+import '../../providers/identity_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/date_time_utils.dart';
 import '../../utils/habit_utils.dart';
@@ -22,10 +23,11 @@ class HabitDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final scoreAsync = ref.watch(consistencyScoreProvider(habit.id.toString()));
-    final logsAsync = ref.watch(habitLogsProvider(habit.id.toString()));
     final userSettings = ref.watch(userSettingsProvider);
     final today = DateTimeUtils.resolveAppToday(DateTime.now(), userSettings.dayStartTime);
+    final scoreAsync = ref.watch(consistencyScoreProvider(habit.id.toString()));
+    final identitiesAsync = ref.watch(identityListProvider);
+    final logsAsync = ref.watch(habitLogsProvider(habit.id.toString()));
 
     // Compute last 7 days excluding today (from yesterday back to 7 days ago)
     final last7Days = List.generate(7, (index) => today.subtract(Duration(days: index + 1))).reversed.toList();
@@ -77,7 +79,12 @@ class HabitDetailScreen extends ConsumerWidget {
           ),
           IconButton(
             icon: const Icon(Icons.archive_outlined),
-            onPressed: () => _confirmArchive(context, ref, currentStack),
+            onPressed: () async {
+              bool archived = await HabitUtils.confirmArchive(context, ref, habit, currentStack);
+              if (archived && context.mounted) {
+                Navigator.pop(context);
+              }
+            },
           ),
         ],
       ),
@@ -97,8 +104,20 @@ class HabitDetailScreen extends ConsumerWidget {
           Text(habit.name, style: Theme.of(context).textTheme.headlineMedium),
           const SizedBox(height: AppTheme.spacingLg),
           if (habit.identityStatementId != null) ...[
-            Text('Identity linked', style: Theme.of(context).textTheme.bodySmall),
-            const SizedBox(height: AppTheme.spacingSm),
+            Builder(
+              builder: (ctx) {
+                final identities = identitiesAsync.value ?? [];
+                final linked = identities.where((i) => i.id.toString() == habit.identityStatementId).firstOrNull;
+                if (linked == null) return const SizedBox.shrink();
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Identity linked: ${linked.statement}', style: Theme.of(context).textTheme.bodySmall),
+                    const SizedBox(height: AppTheme.spacingSm),
+                  ],
+                );
+              },
+            ),
           ],
           
           Card(
@@ -349,69 +368,7 @@ class HabitDetailScreen extends ConsumerWidget {
     }
   }
 
-  void _confirmArchive(BuildContext context, WidgetRef ref, HabitStack? currentStack) {
-    if (currentStack != null) {
-      final index = currentStack.habitIds.indexOf(habit.id.toString());
-      if (index > 0 && index < currentStack.habitIds.length - 1) {
-        // Mid-stack archive
-        showDialog(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            backgroundColor: AppTheme.bgSurfaceRaised,
-            title: const Text('Archive mid-stack habit?'),
-            content: const Text('This habit is in the middle of a chain. What should happen to the rest of the chain?'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: const Text('Cancel', style: TextStyle(color: AppTheme.textPrimary)),
-              ),
-              TextButton(
-                onPressed: () {
-                  ref.read(stackNotifierProvider).archiveHabitWithStackHandling(habit.id.toString(), split: true);
-                  Navigator.pop(ctx);
-                  Navigator.pop(context);
-                },
-                child: const Text('Split into two chains'),
-              ),
-              TextButton(
-                onPressed: () {
-                  ref.read(stackNotifierProvider).archiveHabitWithStackHandling(habit.id.toString(), split: false);
-                  Navigator.pop(ctx);
-                  Navigator.pop(context);
-                },
-                child: const Text('Reconnect the chain', style: TextStyle(color: AppTheme.accentRecoverFill)),
-              ),
-            ],
-          ),
-        );
-        return;
-      }
-    }
 
-    // Normal or edge archive
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppTheme.bgSurfaceRaised,
-        title: const Text('Archive Habit?'),
-        content: const Text('This habit will be hidden. It can be restored later in settings.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel', style: TextStyle(color: AppTheme.textPrimary)),
-          ),
-          TextButton(
-            onPressed: () {
-              ref.read(stackNotifierProvider).archiveHabitWithStackHandling(habit.id.toString(), split: false);
-              Navigator.pop(ctx); 
-              Navigator.pop(context); 
-            },
-            child: const Text('Archive', style: TextStyle(color: AppTheme.accentRecoverFill)),
-          ),
-        ],
-      ),
-    );
-  }
 }
 class _InfoRow extends StatelessWidget {
   final String label;

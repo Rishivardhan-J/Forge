@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/habit.dart';
 import '../models/habit_log.dart';
+import '../models/habit_stack.dart';
 import '../providers/habit_provider.dart';
+import '../providers/stack_provider.dart';
 import '../theme/app_theme.dart';
 
 class HabitUtils {
@@ -110,5 +112,65 @@ class HabitUtils {
     final history = computeConsistencyScoreHistory(habit, logs, todayAppDate);
     if (history.isEmpty) return 0.0;
     return history.values.last;
+  }
+
+  static Future<bool> confirmArchive(BuildContext context, WidgetRef ref, Habit habit, HabitStack? currentStack) async {
+    if (currentStack != null) {
+      final index = currentStack.habitIds.indexOf(habit.id.toString());
+      if (index > 0 && index < currentStack.habitIds.length - 1) {
+        // Mid-stack archive
+        return await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            backgroundColor: AppTheme.bgSurfaceRaised,
+            title: const Text('Archive mid-stack habit?'),
+            content: const Text('This habit is in the middle of a chain. What should happen to the rest of the chain?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Cancel', style: TextStyle(color: AppTheme.textPrimary)),
+              ),
+              TextButton(
+                onPressed: () {
+                  ref.read(stackNotifierProvider).archiveHabitWithStackHandling(habit.id.toString(), split: true);
+                  Navigator.pop(ctx, true);
+                },
+                child: const Text('Split into two chains'),
+              ),
+              TextButton(
+                onPressed: () {
+                  ref.read(stackNotifierProvider).archiveHabitWithStackHandling(habit.id.toString(), split: false);
+                  Navigator.pop(ctx, true);
+                },
+                child: const Text('Reconnect the chain', style: TextStyle(color: AppTheme.accentRecoverFill)),
+              ),
+            ],
+          ),
+        ) ?? false;
+      }
+    }
+
+    // Normal or edge archive
+    return await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppTheme.bgSurfaceRaised,
+        title: const Text('Archive Habit?'),
+        content: const Text('This habit will be hidden. It can be restored later in settings.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel', style: TextStyle(color: AppTheme.textPrimary)),
+          ),
+          TextButton(
+            onPressed: () {
+              ref.read(stackNotifierProvider).archiveHabitWithStackHandling(habit.id.toString(), split: false);
+              Navigator.pop(ctx, true);
+            },
+            child: const Text('Archive', style: TextStyle(color: AppTheme.accentRecoverFill)),
+          ),
+        ],
+      ),
+    ) ?? false;
   }
 }

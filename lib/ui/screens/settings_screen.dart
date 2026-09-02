@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../../theme/app_theme.dart';
+import '../../models/user_settings.dart';
 import '../../providers/user_settings_provider.dart';
 import '../../database/isar_provider.dart';
 import '../../services/backup_restore_service.dart';
 import '../../services/export_service.dart';
+import 'profile_screen.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -81,6 +83,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with WidgetsBin
   @override
   Widget build(BuildContext context) {
     final settings = ref.watch(userSettingsProvider);
+    
+    final avatarColor = settings.avatarAccent == AvatarAccent.purple
+        ? AppTheme.accentIdentityFill
+        : AppTheme.accentGrowthFill;
+
+    final avatarText = settings.avatarAccent == AvatarAccent.purple
+        ? AppTheme.accentIdentityText
+        : AppTheme.accentGrowthText;
+
+    final initials = settings.displayName != null && settings.displayName!.isNotEmpty
+        ? settings.displayName!.substring(0, 1).toUpperCase()
+        : "?";
 
     return Scaffold(
       backgroundColor: AppTheme.bgBase,
@@ -91,6 +105,29 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with WidgetsBin
       body: ListView(
         padding: const EdgeInsets.all(AppTheme.spacingLg),
         children: [
+          Card(
+            child: ListTile(
+              contentPadding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingLg, vertical: AppTheme.spacingSm),
+              leading: CircleAvatar(
+                backgroundColor: avatarColor,
+                child: Text(
+                  initials,
+                  style: TextStyle(color: avatarText, fontWeight: FontWeight.bold),
+                ),
+              ),
+              title: Text(
+                settings.displayName ?? 'Profile & Scorecard',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              subtitle: const Text('View your identity summary'),
+              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileScreen()));
+              },
+            ),
+          ),
+          const SizedBox(height: AppTheme.spacingXl),
+          
           Text('Permissions', style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: AppTheme.spacingMd),
           Card(
