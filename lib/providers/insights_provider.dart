@@ -198,6 +198,7 @@ class InsightsOverview {
   final String? mostConsistentHabitName;
   final double mostConsistentHabitScore;
   final String weekOverWeekSentence;
+  final bool hasHistory;
 
   InsightsOverview({
     required this.completedToday,
@@ -208,6 +209,7 @@ class InsightsOverview {
     this.mostConsistentHabitName,
     required this.mostConsistentHabitScore,
     required this.weekOverWeekSentence,
+    required this.hasHistory,
   });
 }
 
@@ -305,5 +307,6 @@ final insightsOverviewProvider = FutureProvider<InsightsOverview>((ref) async {
     mostConsistentHabitName: bestHabitName,
     mostConsistentHabitScore: bestHabitScore,
     weekOverWeekSentence: weekSentence,
+    hasHistory: chartData.historical.isNotEmpty,
   );
 });

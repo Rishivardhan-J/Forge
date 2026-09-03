@@ -233,7 +233,7 @@ class _TransitMapLineState extends ConsumerState<TransitMapLine> with SingleTick
             ListTile(
               title: const Text('Done'),
               onTap: () {
-                HapticFeedback.mediumImpact();
+                HapticFeedback.lightImpact();
                 ref.read(habitNotifierProvider).logHabit(habit.id.toString(), todayDate, LogStatus.done);
                 Navigator.pop(ctx);
               },
@@ -241,7 +241,7 @@ class _TransitMapLineState extends ConsumerState<TransitMapLine> with SingleTick
             ListTile(
               title: const Text('Done (2-min version)'),
               onTap: () {
-                HapticFeedback.mediumImpact();
+                HapticFeedback.lightImpact();
                 ref.read(habitNotifierProvider).logHabit(habit.id.toString(), todayDate, LogStatus.doneViaTwoMinute);
                 Navigator.pop(ctx);
               },
@@ -249,7 +249,6 @@ class _TransitMapLineState extends ConsumerState<TransitMapLine> with SingleTick
             ListTile(
                 title: const Text('Missed'),
                 onTap: () {
-                  HapticFeedback.heavyImpact();
                   ref.read(habitNotifierProvider).logHabit(habit.id.toString(), todayDate, LogStatus.missed);
                   HabitUtils.showEnvironmentReadyPrompt(context, ref, habit, todayDate);
                   Navigator.pop(ctx);
@@ -271,6 +270,9 @@ class _TransitMapLineState extends ConsumerState<TransitMapLine> with SingleTick
     showModalBottomSheet(
       context: context,
       backgroundColor: AppTheme.bgSurfaceRaised,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+      ),
       builder: (ctx) {
         return SafeArea(
           child: Column(

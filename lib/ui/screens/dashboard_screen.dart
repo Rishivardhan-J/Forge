@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/services.dart';
 
 import '../../models/habit.dart';
 import '../../models/habit_log.dart';
@@ -38,7 +39,7 @@ class DashboardScreen extends ConsumerWidget {
         data: (overview) => CustomScrollView(
           slivers: [
             SliverToBoxAdapter(
-              child: _buildHeroRing(context, overview.averageConsistency, reduceMotion),
+              child: _buildHeroRing(context, overview.averageConsistency, reduceMotion, overview.hasHistory),
             ),
             SliverToBoxAdapter(
               child: Padding(
@@ -88,13 +89,13 @@ class DashboardScreen extends ConsumerWidget {
             const SliverToBoxAdapter(child: SizedBox(height: 64)),
           ],
         ),
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(child: CircularProgressIndicator(color: AppTheme.accentGrowthFill)),
         error: (e, st) => const SizedBox.shrink(),
       ),
     );
   }
 
-  Widget _buildHeroRing(BuildContext context, double consistency, bool reduceMotion) {
+  Widget _buildHeroRing(BuildContext context, double consistency, bool reduceMotion, bool hasHistory) {
     return Padding(
       padding: const EdgeInsets.only(top: 48.0, bottom: 48.0),
       child: Center(
@@ -115,15 +116,31 @@ class DashboardScreen extends ConsumerWidget {
                     backgroundColor: AppTheme.borderStrong,
                     color: AppTheme.accentGrowthFill,
                   ),
-                  Center(
-                    child: Text(
-                      value.toStringAsFixed(1),
-                      style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                            fontSize: 30,
-                            fontWeight: FontWeight.w500,
-                          ),
+                  if (!hasHistory)
+                    Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingXl),
+                        child: Text(
+                          "Lay your first track to build consistency.",
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                color: AppTheme.textSecondary,
+                              ),
+                        ),
+                      ),
+                    )
+                  else
+                    Center(
+                      child: FittedBox(
+                        child: Text(
+                          value.toStringAsFixed(1),
+                          style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                                fontSize: 30,
+                                fontWeight: FontWeight.w500,
+                              ),
+                        ),
+                      ),
                     ),
-                  ),
                 ],
               );
             },
@@ -135,7 +152,26 @@ class DashboardScreen extends ConsumerWidget {
 
   Widget _buildTodayAtAGlance(BuildContext context, WidgetRef ref, List<Habit> habits, DateTime today) {
     final scheduledHabits = habits.where((h) => !h.isArchived && HabitUtils.isScheduledOn(h, today)).toList();
-    if (scheduledHabits.isEmpty) return const SizedBox.shrink();
+    if (scheduledHabits.isEmpty) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Today at a glance',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppTheme.textSecondary,
+                ),
+          ),
+          const SizedBox(height: AppTheme.spacingLg),
+          Text(
+            "No habits scheduled for today.",
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  color: AppTheme.textMuted,
+                ),
+          ),
+        ],
+      );
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -167,21 +203,32 @@ class DashboardScreen extends ConsumerWidget {
         final todayLog = logs.where((l) => l.date.year == today.year && l.date.month == today.month && l.date.day == today.day).firstOrNull;
         final status = todayLog?.status ?? LogStatus.missed;
 
+        String statusLabel = 'unlogged';
+        if (status == LogStatus.done || status == LogStatus.doneViaTwoMinute) statusLabel = 'completed';
+        if (status == LogStatus.missed) statusLabel = 'missed';
+        if (status == LogStatus.excused) statusLabel = 'excused';
+
+        final semanticsLabel = '${habit.name}, $statusLabel';
+
         return Padding(
           padding: const EdgeInsets.only(right: AppTheme.spacingMd),
-          child: GestureDetector(
-            onTap: () => _showLogChoice(context, ref, habit, today),
-            child: StationNode(
-              status: status,
-              accentColor: AppTheme.accentGrowthFill,
-              size: 24,
+          child: Semantics(
+            label: semanticsLabel,
+            button: true,
+            child: GestureDetector(
+              onTap: () => _showLogChoice(context, ref, habit, today),
+              child: StationNode(
+                status: status,
+                accentColor: AppTheme.accentGrowthFill,
+                size: 24,
+              ),
             ),
           ),
         );
       },
       loading: () => const Padding(
         padding: EdgeInsets.only(right: AppTheme.spacingMd),
-        child: SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2)),
+        child: SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.accentGrowthFill)),
       ),
       error: (e, st) => const SizedBox.shrink(),
     );
@@ -199,6 +246,7 @@ class DashboardScreen extends ConsumerWidget {
             ListTile(
               title: const Text('Done'),
               onTap: () {
+                HapticFeedback.lightImpact();
                 ref.read(habitNotifierProvider).logHabit(habit.id.toString(), todayDate, LogStatus.done);
                 Navigator.pop(ctx);
               },
@@ -206,6 +254,7 @@ class DashboardScreen extends ConsumerWidget {
             ListTile(
               title: const Text('Done (2-min version)'),
               onTap: () {
+                HapticFeedback.lightImpact();
                 ref.read(habitNotifierProvider).logHabit(habit.id.toString(), todayDate, LogStatus.doneViaTwoMinute);
                 Navigator.pop(ctx);
               },

@@ -124,9 +124,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 child: CircleAvatar(
                   radius: 36,
                   backgroundColor: avatarColor,
-                  child: Text(
-                    initials,
-                    style: TextStyle(fontSize: 28, color: avatarText, fontWeight: FontWeight.bold),
+                  child: FittedBox(
+                    child: Text(
+                      initials,
+                      style: TextStyle(fontSize: 30, color: avatarText, fontWeight: FontWeight.bold),
+                    ),
                   ),
                 ),
               ),
@@ -196,7 +198,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           Text('Your original scorecard', style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: AppTheme.spacingLg),
           if (_scorecardEntries == null)
-            const Center(child: CircularProgressIndicator())
+            const Center(child: CircularProgressIndicator(color: AppTheme.accentGrowthFill))
           else if (_scorecardEntries!.isEmpty)
             Text(
               'No scorecard entries found. This is normal if you skipped the onboarding exercise.',
@@ -216,10 +218,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       width: 24,
                       child: Text(
                         marker,
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: AppTheme.textSecondary,
                           fontWeight: FontWeight.bold,
-                          fontSize: 18,
+                          fontSize: 20,
                         ),
                         textAlign: TextAlign.center,
                       ),

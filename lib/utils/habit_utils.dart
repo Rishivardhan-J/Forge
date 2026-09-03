@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/services.dart';
 
 import '../models/habit.dart';
 import '../models/habit_log.dart';
@@ -132,6 +133,7 @@ class HabitUtils {
               ),
               TextButton(
                 onPressed: () {
+                  HapticFeedback.lightImpact();
                   ref.read(stackNotifierProvider).archiveHabitWithStackHandling(habit.id.toString(), split: true);
                   Navigator.pop(ctx, true);
                 },
@@ -139,6 +141,7 @@ class HabitUtils {
               ),
               TextButton(
                 onPressed: () {
+                  HapticFeedback.lightImpact();
                   ref.read(stackNotifierProvider).archiveHabitWithStackHandling(habit.id.toString(), split: false);
                   Navigator.pop(ctx, true);
                 },
@@ -164,6 +167,7 @@ class HabitUtils {
           ),
           TextButton(
             onPressed: () {
+              HapticFeedback.lightImpact();
               ref.read(stackNotifierProvider).archiveHabitWithStackHandling(habit.id.toString(), split: false);
               Navigator.pop(ctx, true);
             },
